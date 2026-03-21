@@ -1,0 +1,22 @@
+{
+  "name": "gym-pt-reservation-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gym PT Reservation Demo - frontend and backend",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:frontend:lambda": "npm run dev:lambda --prefix frontend",
+    "dev:lambda": "npm run dev:lambda --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1009.0",
+    "@aws-sdk/lib-dynamodb": "^3.1009.0"
+  }
+}
