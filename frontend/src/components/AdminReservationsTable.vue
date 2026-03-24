@@ -173,6 +173,8 @@ const editPtType = ref('60min');
 
 function statusClass(status) {
   switch (status) {
+    case 'Pending':
+      return 'bg-yellow-100 text-yellow-800';
     case 'Confirmed':
       return 'bg-emerald-100 text-emerald-800';
     case 'Completed':
@@ -188,6 +190,7 @@ function statusClass(status) {
 
 function statusLabel(status) {
   const map = {
+    Pending: '승인 대기',
     Confirmed: '확정',
     Completed: '완료',
     Cancelled: '취소',

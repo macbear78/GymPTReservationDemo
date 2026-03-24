@@ -429,6 +429,42 @@ export async function memberVerify(storeId, token) {
   return res.json();
 }
 
+/**
+ * 회원 본인 예약 목록 조회 (v2). Authorization: memberToken
+ * GET /api/v2/stores/:storeId/member/reservations
+ */
+export async function getMemberReservationsV2(storeId) {
+  const token = localStorage.getItem('memberToken');
+  const res = await fetch(`${API_V2}/stores/${storeId}/member/reservations`, {
+    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || '예약 조회에 실패했습니다.');
+  return data;
+}
+
+/**
+ * 회원 본인 예약 취소 (v2). Authorization: memberToken
+ * POST /api/v2/stores/:storeId/member/reservations/:reservationId/cancel
+ */
+export async function cancelMemberReservationV2(storeId, reservationId, body) {
+  const token = localStorage.getItem('memberToken');
+  const res = await fetch(
+    `${API_V2}/stores/${storeId}/member/reservations/${encodeURIComponent(reservationId)}/cancel`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || '예약 취소에 실패했습니다.');
+  return data;
+}
+
 // ─── Inquiry API ──────────────────────────────────────────────────────────────
 
 export async function createInquiry(storeId, data) {

@@ -161,7 +161,7 @@
                 {{ statusLabel(r.status) }}
               </span>
               <button
-                v-if="r.status === 'Confirmed'"
+                v-if="r.status === 'Confirmed' || r.status === 'Pending'"
                 type="button"
                 class="px-4 py-2 rounded-xl text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition"
                 @click="cancelReservation(r)"
@@ -182,7 +182,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { getReservations, cancelReservation as cancelReservationApi, lookupUser, getUserPasses, getUserNotifications, markNotificationRead } from '../api';
+import { getReservations, cancelReservation as cancelReservationApi, lookupUser, getUserPasses, getUserNotifications, markNotificationRead, getMemberReservationsV2 } from '../api';
 import { formatKoreanPhoneAsYouType } from '../utils/phoneFormat.js';
 
 // 알림 읽음 처리 (개별)
@@ -231,6 +231,8 @@ function formatDate(iso) {
 
 function statusClass(status) {
   switch (status) {
+    case 'Pending':
+      return 'bg-yellow-100 text-yellow-800';
     case 'Confirmed':
       return 'bg-emerald-100 text-emerald-800';
     case 'Completed':
@@ -244,6 +246,7 @@ function statusClass(status) {
 
 function statusLabel(status) {
   const map = {
+    Pending: '승인 대기',
     Confirmed: '확정',
     Completed: '완료',
     Cancelled: '취소',
@@ -265,7 +268,25 @@ async function search() {
     const [reservationData] = await Promise.all([
       getReservations(null, phone),
     ]);
-    reservations.value = reservationData;
+    // V1 예약
+    let merged = Array.isArray(reservationData) ? reservationData : [];
+    // 회원 토큰이 있으면 V2 예약도 병합
+    const memberToken = localStorage.getItem('memberToken');
+    if (memberToken) {
+      try {
+        const v2data = await getMemberReservationsV2('store_default');
+        const v2list = (v2data.reservations || []).map((r) => ({
+          ...r,
+          status: ({ PENDING: 'Pending', BOOKED: 'Confirmed', COMPLETED: 'Completed', CAD: 'Cancelled', NO_SHOW: 'No-show' })[r.status] || r.status,
+          _v2: true,
+        }));
+        // 중복 제거 (reservationId 기준)
+        const v1Ids = new Set(merged.map((r) => r.id));
+        merged = [...merged, ...v2list.filter((r) => !v1Ids.has(r.id))];
+      } catch { /* V2 조회 실패 시 무시 */ }
+    }
+    merged.sort((a, b) => ((b.date || '') + (b.time || '')).localeCompare((a.date || '') + (a.time || '')));
+    reservations.value = merged;
 
     // 패스·알림 정보 조회 (userId 필요 → lookupUser로 조회)
     try {

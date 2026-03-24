@@ -13,6 +13,7 @@ const TABLE = 'gympt';
 
 const NOTIF_TEMPLATES = {
   SESSION_REMINDER: (d) => `${d.date} ${d.time} PT 수업이 있습니다. 잊지 마세요!`,
+  RESERVATION_CONFIRMED: (d) => `${d.date} ${d.time} PT 예약이 확정되었습니다.`,
   LOW_SESSIONS: (d) => `잔여 세션이 ${d.remaining}회 남았습니다. 재구매를 고려해보세요.`,
   REPURCHASE_PROMO: () => `회원권 세션이 모두 소진되었습니다. 지금 재구매하시면 특별 혜택을 드립니다!`,
   INACTIVITY_ALERT: (d) => `${d.name}님, 오랜만이에요. 다시 시작해볼까요?`,
@@ -149,7 +150,7 @@ notificationsV2Router.post('/send', async (req, res) => {
       return sendError(res, 400, 'userId, type은 필수입니다.');
     }
 
-    const VALID_TYPES = ['SESSION_REMINDER', 'LOW_SESSIONS', 'REPURCHASE_PROMO', 'INACTIVITY_ALERT', 'MANUAL'];
+    const VALID_TYPES = ['SESSION_REMINDER', 'RESERVATION_CONFIRMED', 'LOW_SESSIONS', 'REPURCHASE_PROMO', 'INACTIVITY_ALERT', 'MANUAL'];
     if (!VALID_TYPES.includes(type)) {
       return sendError(res, 400, `type은 ${VALID_TYPES.join(', ')} 중 하나여야 합니다.`);
     }

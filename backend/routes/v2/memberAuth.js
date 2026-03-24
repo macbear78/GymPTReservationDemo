@@ -6,9 +6,10 @@ import { Router }  from 'express';
 import jwt         from 'jsonwebtoken';
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
-import { QueryCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand, PutCommand, UpdateCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { randomUUID } from 'crypto';
 import docClient from '../../db/dynamodb.js';
+import { createAuditLog } from './audit.js';
 
 export const memberAuthRouter = Router({ mergeParams: true });
 
@@ -186,5 +187,166 @@ memberAuthRouter.get('/me', (req, res) => {
     res.json({ userId: payload.userId, name: payload.name, phone: payload.phone, storeId: payload.storeId });
   } catch {
     return sendError(res, 401, '유효하지 않은 토큰입니다.');
+  }
+});
+
+/**
+ * GET /api/v2/stores/:storeId/member/reservations
+ * 본인 예약 목록 조회. Authorization: Bearer
+ */
+memberAuthRouter.get('/reservations', async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return sendError(res, 401, '인증이 필요합니다.');
+  let payload;
+  try {
+    payload = jwt.verify(auth.slice(7), getSecret());
+    if (payload.role !== 'member') return sendError(res, 403, '회원 토큰이 아닙니다.');
+  } catch {
+    return sendError(res, 401, '유효하지 않은 토큰입니다.');
+  }
+
+  try {
+    const { userId } = payload;
+    const result = await docClient.send(new QueryCommand({
+      TableName: TABLE,
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :prefix)',
+      ExpressionAttributeValues: {
+        ':pk': `USER#${userId}`,
+        ':prefix': 'RESERVATION#',
+      },
+    }));
+
+    const reservations = (result.Items || [])
+      .sort((a, b) => (b.datetime || '').localeCompare(a.datetime || ''))
+      .map((r) => ({
+        id: r.reservationId,
+        reservationId: r.reservationId,
+        date: r.date,
+        time: r.time,
+        status: r.status,
+        trainerId: r.trainerId,
+        ptType: r.ptType || '60min',
+        pt_type: r.ptType || '60min',
+        createdAt: r.createdAt,
+      }));
+
+    res.json({ reservations });
+  } catch (e) {
+    console.error('GET /member/reservations error:', e);
+    return sendError(res, 500, e.message || '예약 조회에 실패했습니다.');
+  }
+});
+
+/**
+ * POST /api/v2/stores/:storeId/member/reservations/:reservationId/cancel
+ * 본인 예약 취소 (v2 DynamoDB 예약만). Authorization: Bearer
+ * Body: { date, time, trainerId? }
+ */
+memberAuthRouter.post('/reservations/:reservationId/cancel', async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) {
+    return sendError(res, 401, '인증이 필요합니다.');
+  }
+  let payload;
+  try {
+    payload = jwt.verify(auth.slice(7), getSecret());
+    if (payload.role !== 'member') return sendError(res, 403, '회원 토큰이 아닙니다.');
+  } catch {
+    return sendError(res, 401, '유효하지 않은 토큰입니다.');
+  }
+
+  const { storeId, reservationId } = req.params;
+  if (payload.storeId !== storeId) {
+    return sendError(res, 403, '스토어가 일치하지 않습니다.');
+  }
+
+  const { date, time, trainerId } = req.body || {};
+  if (!date || !time) {
+    return sendError(res, 400, 'date, time은 필수입니다.');
+  }
+  const tid = trainerId || 'any';
+
+  try {
+    const existing = await docClient.send(new GetCommand({
+      TableName: TABLE,
+      Key: {
+        PK: `STORE#${storeId}`,
+        SK: `RESERVATION#${date}#${time}#${tid}`,
+      },
+    }));
+
+    if (!existing.Item) {
+      return sendError(res, 404, '예약을 찾을 수 없습니다.');
+    }
+    if (existing.Item.userId !== payload.userId) {
+      return sendError(res, 403, '본인 예약만 취소할 수 있습니다.');
+    }
+    if (String(existing.Item.reservationId) !== String(reservationId)) {
+      return sendError(res, 400, '예약 정보가 일치하지 않습니다.');
+    }
+    if (existing.Item.status !== 'BOOKED') {
+      return sendError(res, 400, '취소할 수 있는 예약이 아닙니다.');
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (existing.Item.date < todayStr) {
+      return sendError(res, 400, '이미 지난 예약은 취소할 수 없습니다.');
+    }
+
+    const status = 'CAD';
+    const now = new Date().toISOString();
+    const prevStatus = existing.Item.status;
+
+    await docClient.send(new UpdateCommand({
+      TableName: TABLE,
+      Key: {
+        PK: `STORE#${storeId}`,
+        SK: `RESERVATION#${date}#${time}#${tid}`,
+      },
+      UpdateExpression: 'SET #st = :status, statusDate = :statusDate, updatedAt = :now',
+      ExpressionAttributeNames: { '#st': 'status' },
+      ExpressionAttributeValues: {
+        ':status': status,
+        ':statusDate': `${status}#${date}`,
+        ':now': now,
+      },
+    }));
+
+    const datetime = `${date}T${time}:00`;
+    const userSk = `RESERVATION#${datetime}`;
+    await docClient.send(new UpdateCommand({
+      TableName: TABLE,
+      Key: {
+        PK: `USER#${payload.userId}`,
+        SK: userSk,
+      },
+      UpdateExpression: 'SET #st = :status, statusDate = :statusDate, updatedAt = :now',
+      ExpressionAttributeNames: { '#st': 'status' },
+      ExpressionAttributeValues: {
+        ':status': status,
+        ':statusDate': `${status}#${date}`,
+        ':now': now,
+      },
+    }));
+
+    if (prevStatus !== status) {
+      createAuditLog({
+        entityType: 'RESERVATION',
+        entityId: reservationId,
+        userId: payload.userId,
+        storeId,
+        action: 'STATUS_CHANGE',
+        changes: {
+          status: { before: prevStatus ?? null, after: status },
+        },
+        editedBy: 'member',
+        reason: '회원 직접 취소',
+      }).catch(() => {});
+    }
+
+    res.json({ reservationId, status, updatedAt: now });
+  } catch (e) {
+    console.error('POST /member/reservations/:id/cancel error:', e);
+    return sendError(res, 500, e.message || '예약 취소에 실패했습니다.');
   }
 });

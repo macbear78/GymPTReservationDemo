@@ -20,10 +20,12 @@ export const reservationsV2Router = Router({ mergeParams: true });
 const TABLE = 'gympt';
 const TRAINERS_TABLE = process.env.TRAINERS_TABLE || 'trainers';
 const TIME_SLOTS = ['06:00', '07:00', '08:00', '09:00', '18:00', '19:00', '20:00'];
-const VALID_STATUSES = ['BOOKED', 'COMPLETED', 'CAD', 'NO_SHOW'];
+const VALID_STATUSES = ['PENDING', 'BOOKED', 'COMPLETED', 'CAD', 'NO_SHOW'];
 
 function mapV2StatusToV1(s) {
   switch (s) {
+    case 'PENDING':
+      return 'Pending';
     case 'BOOKED':
       return 'Confirmed';
     case 'COMPLETED':
@@ -33,7 +35,7 @@ function mapV2StatusToV1(s) {
     case 'NO_SHOW':
       return 'No-show';
     default:
-      return 'Confirmed';
+      return 'Pending';
   }
 }
 
@@ -116,12 +118,13 @@ reservationsV2Router.get('/available', async (req, res) => {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLE,
       KeyConditionExpression: 'PK = :pk AND begins_with(SK, :prefix)',
-      FilterExpression: '#st = :status',
+      FilterExpression: '#st IN (:booked, :pending)',
       ExpressionAttributeNames: { '#st': 'status' },
       ExpressionAttributeValues: {
         ':pk': `STORE#${storeId}`,
         ':prefix': `RESERVATION#${date}#`,
-        ':status': 'BOOKED',
+        ':booked': 'BOOKED',
+        ':pending': 'PENDING',
       },
     }));
 
@@ -209,16 +212,17 @@ reservationsV2Router.post('/', async (req, res) => {
       return sendError(res, 400, '유효하지 않은 시간 슬롯입니다.');
     }
 
-    // 중복 예약 확인
+    // 중복 예약 확인 (PENDING·BOOKED 상태 모두 점유로 처리)
     const conflict = await docClient.send(new QueryCommand({
       TableName: TABLE,
       KeyConditionExpression: 'PK = :pk AND SK = :sk',
-      FilterExpression: '#st = :status',
+      FilterExpression: '#st IN (:booked, :pending)',
       ExpressionAttributeNames: { '#st': 'status' },
       ExpressionAttributeValues: {
         ':pk': `STORE#${storeId}`,
         ':sk': `RESERVATION#${date}#${time}#${trainerId || 'any'}`,
-        ':status': 'BOOKED',
+        ':booked': 'BOOKED',
+        ':pending': 'PENDING',
       },
     }));
 
@@ -240,8 +244,8 @@ reservationsV2Router.post('/', async (req, res) => {
       datetime,
       date,
       time,
-      status: 'BOOKED',
-      statusDate: `BOOKED#${date}`,  // GSI-2용
+      status: 'PENDING',
+      statusDate: `PENDING#${date}`,  // GSI-2용
       ...(trainerId && { trainerId }),
       ...(ptType && { ptType }),
       ...(passId && { passId }),
@@ -258,7 +262,7 @@ reservationsV2Router.post('/', async (req, res) => {
       datetime,
       date,
       time,
-      status: 'BOOKED',
+      status: 'PENDING',
       ...(trainerId && { trainerId }),
       ...(ptType && { ptType }),
       createdAt: now,
@@ -330,17 +334,9 @@ reservationsV2Router.post('/', async (req, res) => {
       remainingSessions = updated.Item?.remainingSessions;
     }
 
-    // SESSION_REMINDER 알림 생성 (fire-and-forget)
-    createNotification({
-      userId,
-      storeId,
-      type: 'SESSION_REMINDER',
-      data: { date, time },
-    }).catch(() => {});
-
     res.status(201).json({
       reservationId,
-      status: 'BOOKED',
+      status: 'PENDING',
       datetime,
       storeId,
       userId,
@@ -399,6 +395,27 @@ reservationsV2Router.patch('/:reservationId', async (req, res) => {
       },
     }));
 
+    // 사용자 이력(USER#) 레코드 동기화 — GET /users/:id/reservations 와 일치
+    const uid = existing.Item?.userId;
+    if (uid) {
+      const datetime = `${date}T${time}:00`;
+      const userSk = `RESERVATION#${datetime}`;
+      await docClient.send(new UpdateCommand({
+        TableName: TABLE,
+        Key: {
+          PK: `USER#${uid}`,
+          SK: userSk,
+        },
+        UpdateExpression: 'SET #st = :status, statusDate = :statusDate, updatedAt = :now',
+        ExpressionAttributeNames: { '#st': 'status' },
+        ExpressionAttributeValues: {
+          ':status': status,
+          ':statusDate': `${status}#${date}`,
+          ':now': now,
+        },
+      }));
+    }
+
     // Audit log 기록 (fire-and-forget)
     if (prevStatus !== status) {
       createAuditLog({
@@ -413,6 +430,16 @@ reservationsV2Router.patch('/:reservationId', async (req, res) => {
         editedBy,
         reason,
       }).catch(() => {});
+
+      // PENDING → BOOKED 전환 시 회원에게 예약 확정 알림 발송
+      if (prevStatus === 'PENDING' && status === 'BOOKED' && uid) {
+        createNotification({
+          userId: uid,
+          storeId,
+          type: 'RESERVATION_CONFIRMED',
+          data: { date, time },
+        }).catch(() => {});
+      }
     }
 
     res.json({ reservationId, status, updatedAt: now });

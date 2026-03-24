@@ -6,7 +6,7 @@
     </header>
 
     <!-- 통계 카드 -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
       <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
         <p class="text-slate-500 text-sm font-medium">오늘 예약</p>
         <p class="mt-1 text-2xl sm:text-3xl font-bold text-slate-800">{{ stats.today }}</p>
@@ -18,6 +18,10 @@
       <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
         <p class="text-slate-500 text-sm font-medium">총 예약</p>
         <p class="mt-1 text-2xl sm:text-3xl font-bold text-slate-800">{{ stats.total }}</p>
+      </div>
+      <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-4 sm:p-5 shadow-sm">
+        <p class="text-yellow-700 text-sm font-medium">승인 대기</p>
+        <p class="mt-1 text-2xl sm:text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
         <p class="text-slate-500 text-sm font-medium">취소 예약</p>
@@ -58,6 +62,17 @@
             <option value="">전체</option>
             <option v-for="t in trainerNames" :key="t" :value="t">{{ t }}</option>
           </select>
+        </div>
+        <div class="flex items-center gap-2 pt-1 sm:pt-5">
+          <input
+            id="showCancelled"
+            v-model="showCancelled"
+            type="checkbox"
+            class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+          />
+          <label for="showCancelled" class="text-sm font-medium text-slate-600 cursor-pointer select-none whitespace-nowrap">
+            취소 예약 포함
+          </label>
         </div>
       </div>
     </div>
@@ -106,6 +121,7 @@ const trainerNames = ref([]);
 const searchName = ref('');
 const searchPhone = ref('');
 const filterTrainer = ref('');
+const showCancelled = ref(false);
 const loading = ref(true);
 const error = ref('');
 
@@ -136,12 +152,14 @@ const stats = computed(() => {
     week: list.filter((r) => r.date >= start && r.date <= end && r.status !== 'Cancelled').length,
     total: list.length,
     cancelled: list.filter((r) => r.status === 'Cancelled').length,
+    pending: list.filter((r) => r.status === 'Pending').length,
   };
 });
 
 /** 관리자 UI 상태 → v2 API status */
 function mapUiStatusToV2(status) {
   const m = {
+    Pending: 'PENDING',
     Confirmed: 'BOOKED',
     Completed: 'COMPLETED',
     Cancelled: 'CAD',
@@ -152,6 +170,7 @@ function mapUiStatusToV2(status) {
 
 const filteredReservations = computed(() => {
   let list = reservations.value;
+  if (!showCancelled.value) list = list.filter((r) => r.status !== 'Cancelled');
   const name = searchName.value.trim().toLowerCase();
   const phoneDigits = searchPhone.value.replace(/\D/g, '');
   if (name) list = list.filter((r) => (r.name || '').toLowerCase().includes(name));
