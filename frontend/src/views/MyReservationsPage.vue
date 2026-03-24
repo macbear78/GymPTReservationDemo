@@ -10,10 +10,13 @@
       <label class="block text-sm font-medium text-slate-700 mb-2">전화번호</label>
       <div class="flex gap-3">
         <input
-          v-model="phoneQuery"
+          :value="phoneQuery"
           type="tel"
+          inputmode="numeric"
+          autocomplete="tel"
           placeholder="010-0000-0000"
           class="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-slate-800 placeholder-slate-400"
+          @input="onPhoneQueryInput"
           @keyup.enter="search"
         />
         <button
@@ -180,6 +183,7 @@
 <script setup>
 import { ref } from 'vue';
 import { getReservations, cancelReservation as cancelReservationApi, lookupUser, getUserPasses, getUserNotifications, markNotificationRead } from '../api';
+import { formatKoreanPhoneAsYouType } from '../utils/phoneFormat.js';
 
 // 알림 읽음 처리 (개별)
 async function markNotifRead(notif) {
@@ -204,6 +208,10 @@ async function markAllNotifRead() {
 }
 
 const STORE_ID = 'store_default';
+
+function onPhoneQueryInput(e) {
+  phoneQuery.value = formatKoreanPhoneAsYouType(e.target.value);
+}
 
 const phoneQuery = ref('');
 const reservations = ref([]);
@@ -244,7 +252,7 @@ function statusLabel(status) {
 }
 
 async function search() {
-  const phone = phoneQuery.value.trim().replace(/\s/g, '');
+  const phone = phoneQuery.value.replace(/\D/g, '');
   if (!phone) {
     searchError.value = '전화번호를 입력해 주세요.';
     return;

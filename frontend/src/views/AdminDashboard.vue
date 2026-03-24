@@ -41,14 +41,15 @@
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">전화번호 검색</label>
             <input
-              v-model="searchPhone"
-              type="text"
-              placeholder="전화번호"
+              :value="searchPhone"
+              type="tel"
+              placeholder="010-0000-0000"
               class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-slate-800 placeholder-slate-400"
+              @input="searchPhone = formatKoreanPhoneAsYouType($event.target.value)"
             />
           </div>
         </div>
-        <div>
+        <div v-if="trainerNames.length > 1">
           <label class="block text-sm font-medium text-slate-700 mb-1">트레이너</label>
           <select
             v-model="filterTrainer"
@@ -68,6 +69,7 @@
       <AdminReservationsTable
         v-else
         :reservations="filteredReservations"
+        :hide-trainer-column="trainerNames.length === 1"
         @update="onUpdate"
         @cancel="onCancel"
       />
@@ -87,7 +89,17 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import AdminReservationsTable from '../components/AdminReservationsTable.vue';
-import { getReservations, getTrainers, updateReservation, cancelReservation } from '../api';
+import {
+  getReservations,
+  getReservationsV2,
+  getTrainers,
+  updateReservation,
+  updateReservationV2,
+  cancelReservation,
+} from '../api';
+import { formatKoreanPhoneAsYouType } from '../utils/phoneFormat';
+
+const STORE_ID = 'store_default';
 
 const reservations = ref([]);
 const trainerNames = ref([]);
@@ -127,12 +139,27 @@ const stats = computed(() => {
   };
 });
 
+/** 관리자 UI 상태 → v2 API status */
+function mapUiStatusToV2(status) {
+  const m = {
+    Confirmed: 'BOOKED',
+    Completed: 'COMPLETED',
+    Cancelled: 'CAD',
+    'No-show': 'NO_SHOW',
+  };
+  return m[status] || status;
+}
+
 const filteredReservations = computed(() => {
   let list = reservations.value;
   const name = searchName.value.trim().toLowerCase();
-  const phone = searchPhone.value.trim().replace(/\s/g, '');
+  const phoneDigits = searchPhone.value.replace(/\D/g, '');
   if (name) list = list.filter((r) => (r.name || '').toLowerCase().includes(name));
-  if (phone) list = list.filter((r) => (r.phone || '').replace(/\s/g, '').includes(phone));
+  if (phoneDigits) {
+    list = list.filter((r) =>
+      (r.phone || '').replace(/\D/g, '').includes(phoneDigits)
+    );
+  }
   if (filterTrainer.value) list = list.filter((r) => r.trainer === filterTrainer.value);
   return list;
 });
@@ -141,8 +168,21 @@ async function load() {
   loading.value = true;
   error.value = '';
   try {
-    const [res, trainers] = await Promise.all([getReservations(), getTrainers()]);
-    reservations.value = res;
+    const [v2data, v1, trainers] = await Promise.all([
+      getReservationsV2(STORE_ID),
+      getReservations().catch(() => []),
+      getTrainers(),
+    ]);
+    const v2List = Array.isArray(v2data?.reservations) ? v2data.reservations : [];
+    const legacy = Array.isArray(v1) ? v1 : [];
+    const merged = [
+      ...v2List,
+      ...legacy.map((r) => ({ ...r, source: 'v1', _v2: false })),
+    ].sort((a, b) => {
+      const d = (b.date || '').localeCompare(a.date || '');
+      return d !== 0 ? d : (b.time || '').localeCompare(a.time || '');
+    });
+    reservations.value = merged;
     trainerNames.value = trainers.map((t) => t.name);
   } catch (e) {
     error.value = e.message || '예약 목록을 불러오지 못했습니다.';
@@ -152,6 +192,29 @@ async function load() {
 }
 
 async function onUpdate({ id, status, time, pt_type }) {
+  const row = reservations.value.find((r) => r.id === id);
+  if (!row) return;
+
+  if (row._v2) {
+    if (time != null || pt_type != null) {
+      alert('신규 예약(v2)은 이 화면에서 시간·PT 유형 변경은 지원하지 않습니다. 상태만 변경할 수 있습니다.');
+      return;
+    }
+    if (status == null) return;
+    try {
+      await updateReservationV2(STORE_ID, row.reservationId, {
+        status: mapUiStatusToV2(status),
+        date: row.date,
+        time: row.time,
+        trainerId: row.trainerKey || 'any',
+      });
+      await load();
+    } catch (e) {
+      alert(e.message || '변경에 실패했습니다.');
+    }
+    return;
+  }
+
   try {
     await updateReservation(id, { status, time, pt_type });
     await load();
@@ -162,8 +225,20 @@ async function onUpdate({ id, status, time, pt_type }) {
 
 async function onCancel(id) {
   if (!confirm('이 예약을 취소하시겠습니까?')) return;
+  const row = reservations.value.find((r) => r.id === id);
+  if (!row) return;
+
   try {
-    await cancelReservation(id);
+    if (row._v2) {
+      await updateReservationV2(STORE_ID, row.reservationId, {
+        status: 'CAD',
+        date: row.date,
+        time: row.time,
+        trainerId: row.trainerKey || 'any',
+      });
+    } else {
+      await cancelReservation(id);
+    }
     await load();
   } catch (e) {
     alert(e.message || '취소에 실패했습니다.');

@@ -1,13 +1,13 @@
 <template>
   <div class="max-w-3xl mx-auto px-4 py-6 sm:py-10">
     <router-link
-      to="/trainers"
+      :to="isSingleTrainer ? '/' : '/trainers'"
       class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 sm:mb-8 transition font-medium text-sm sm:text-base"
     >
       <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      트레이너 목록으로
+      {{ isSingleTrainer ? '홈으로' : '트레이너 목록으로' }}
     </router-link>
 
     <div v-if="loading" class="space-y-6">
@@ -49,6 +49,12 @@
             <p class="mt-4 text-lg font-bold text-slate-800">
               시간당 {{ formatPrice(trainer.pricePerHour ?? 0) }}
             </p>
+            <router-link
+              to="/reserve"
+              class="mt-4 inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold bg-primary-500 text-white hover:bg-primary-600 transition shadow-sm"
+            >
+              예약하기
+            </router-link>
           </div>
         </div>
       </section>
@@ -126,11 +132,14 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { getTrainers } from '../api';
 import StarRating from '../components/StarRating.vue';
+import { useSingleTrainerShop } from '../composables/useSingleTrainerShop';
 
 const route = useRoute();
+const trainers = ref([]);
 const trainer = ref(null);
 const loading = ref(true);
 const error = ref('');
+const { isSingleTrainer } = useSingleTrainerShop(trainers);
 
 const AVATAR_COLORS = {
   mike: 'bg-amber-500',
@@ -162,6 +171,7 @@ function formatReviewCount(n) {
 onMounted(async () => {
   try {
     const list = await getTrainers();
+    trainers.value = list;
     const found = list.find((t) => t.id === route.params.id);
     if (found) {
       trainer.value = found;

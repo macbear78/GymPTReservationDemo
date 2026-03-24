@@ -5,7 +5,7 @@
         <tr>
           <th class="px-3 sm:px-4 py-3 font-semibold text-slate-700">이름</th>
           <th class="px-3 sm:px-4 py-3 font-semibold text-slate-700">연락처</th>
-          <th class="px-3 sm:px-4 py-3 font-semibold text-slate-700">트레이너</th>
+          <th v-if="!hideTrainerColumn" class="px-3 sm:px-4 py-3 font-semibold text-slate-700">트레이너</th>
           <th class="px-3 sm:px-4 py-3 font-semibold text-slate-700">날짜</th>
           <th class="px-3 sm:px-4 py-3 font-semibold text-slate-700">시간</th>
           <th class="px-3 sm:px-4 py-3 font-semibold text-slate-700">PT</th>
@@ -20,8 +20,8 @@
           class="border-b border-slate-100 hover:bg-slate-50/80 transition"
         >
           <td class="px-3 sm:px-4 py-3 text-slate-800 font-medium">{{ r.name }}</td>
-          <td class="px-3 sm:px-4 py-3 text-slate-600">{{ r.phone }}</td>
-          <td class="px-3 sm:px-4 py-3 text-slate-800">{{ r.trainer }}</td>
+          <td class="px-3 sm:px-4 py-3 text-slate-600">{{ formatKoreanPhoneDisplayOrDash(r.phone) }}</td>
+          <td v-if="!hideTrainerColumn" class="px-3 sm:px-4 py-3 text-slate-800">{{ r.trainer }}</td>
           <td class="px-3 sm:px-4 py-3 text-slate-600 whitespace-nowrap">{{ r.date }}</td>
           <td class="px-3 sm:px-4 py-3 text-slate-600">
             <template v-if="editingTimeId === r.id">
@@ -49,7 +49,7 @@
             </template>
             <span v-else>{{ r.time }}</span>
             <button
-              v-if="r.status === 'Confirmed' && editingTimeId !== r.id"
+              v-if="r.status === 'Confirmed' && editingTimeId !== r.id && !r._v2"
               type="button"
               class="ml-1 text-slate-400 hover:text-primary-600 text-xs"
               title="시간 변경"
@@ -85,7 +85,7 @@
             </template>
             <span v-else>{{ r.pt_type === '60min' ? '60분' : '30분' }}</span>
             <button
-              v-if="r.status === 'Confirmed' && editingPtId !== r.id"
+              v-if="r.status === 'Confirmed' && editingPtId !== r.id && !r._v2"
               type="button"
               class="ml-1 text-slate-400 hover:text-primary-600 text-xs"
               title="PT 타입 변경"
@@ -142,7 +142,7 @@
           </td>
         </tr>
         <tr v-if="reservations.length === 0">
-          <td colspan="8" class="px-4 py-12 text-center text-slate-500">
+          <td :colspan="hideTrainerColumn ? 7 : 8" class="px-4 py-12 text-center text-slate-500">
             조건에 맞는 예약이 없습니다.
           </td>
         </tr>
@@ -153,11 +153,14 @@
 
 <script setup>
 import { ref } from 'vue';
+import { formatKoreanPhoneDisplayOrDash } from '../utils/phoneFormat';
 
 const TIME_SLOTS = ['06:00', '07:00', '08:00', '09:00', '18:00', '19:00', '20:00'];
 
-defineProps({
+const props = defineProps({
   reservations: { type: Array, default: () => [] },
+  /** 1인 트레이너 샵일 때 트레이너 컬럼 숨김 */
+  hideTrainerColumn: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update', 'cancel']);

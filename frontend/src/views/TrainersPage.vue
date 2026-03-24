@@ -2,12 +2,16 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
     <!-- Header -->
     <header class="mb-8">
-      <h1 class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">트레이너 목록</h1>
-      <p class="mt-2 text-slate-600">전문 PT 트레이너를 만나보세요. 원하시는 트레이너를 선택해 예약할 수 있습니다.</p>
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">
+        {{ isSingleTrainer ? '트레이너 소개' : '트레이너 목록' }}
+      </h1>
+      <p class="mt-2 text-slate-600">
+        {{ isSingleTrainer ? 'PT 트레이너를 소개합니다.' : '전문 PT 트레이너를 만나보세요. 원하시는 트레이너를 선택해 예약할 수 있습니다.' }}
+      </p>
     </header>
 
-    <!-- Filters & Search -->
-    <div class="mb-8 space-y-4">
+    <!-- Filters & Search (2명 이상일 때만) -->
+    <div v-if="!isSingleTrainer" class="mb-8 space-y-4">
       <div class="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <div class="relative flex-1 max-w-md">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -130,9 +134,11 @@ import { useRouter } from 'vue-router';
 import { getTrainers } from '../api';
 import StarRating from '../components/StarRating.vue';
 import TrainerCardSkeleton from '../components/TrainerCardSkeleton.vue';
+import { useSingleTrainerShop } from '../composables/useSingleTrainerShop';
 
 const router = useRouter();
 const trainers = ref([]);
+const { isSingleTrainer } = useSingleTrainerShop(trainers);
 const loading = ref(true);
 const error = ref('');
 const searchQuery = ref('');
@@ -198,7 +204,12 @@ function goToDetail(id) {
 
 onMounted(async () => {
   try {
-    trainers.value = await getTrainers();
+    const list = await getTrainers();
+    trainers.value = list;
+    // 1인 트레이너: 상세 페이지로 바로 리다이렉트
+    if (list.length === 1) {
+      router.replace({ name: 'TrainerDetail', params: { id: list[0].id } });
+    }
   } catch (e) {
     error.value = e.message || '트레이너 목록을 불러오지 못했습니다.';
   } finally {

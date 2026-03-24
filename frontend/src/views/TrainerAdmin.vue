@@ -49,6 +49,32 @@
       </div>
 
       <div class="field">
+        <label for="intro">짧은 소개 <span class="required">*</span></label>
+        <textarea
+          id="intro"
+          v-model.trim="form.intro"
+          rows="3"
+          maxlength="500"
+          placeholder="목록·카드에 보이는 한 줄 요약 (예: 근력과 체형 교정 전문.)"
+          :disabled="registering"
+        />
+        <p class="field-hint">최대 500자 · 트레이너 목록 카드에 표시됩니다.</p>
+      </div>
+
+      <div class="field">
+        <label for="introLong">상세 소개</label>
+        <textarea
+          id="introLong"
+          v-model.trim="form.introLong"
+          rows="8"
+          maxlength="5000"
+          placeholder="상세 페이지에 표시할 긴 소개를 입력하세요. 비우면 짧은 소개와 동일하게 표시됩니다."
+          :disabled="registering"
+        />
+        <p class="field-hint">선택 · 최대 5000자 · 트레이너 상세 페이지의 「트레이너 소개」에 표시됩니다.</p>
+      </div>
+
+      <div class="field">
         <label for="pricePerHour">가격(원/시간) <span class="required">*</span></label>
         <input
           id="pricePerHour"
@@ -114,6 +140,8 @@ const form = ref({
   name: '',
   specialty: '',
   experience: '',
+  intro: '',
+  introLong: '',
   pricePerHour: null,
   profileImage: '',
 });
@@ -148,6 +176,7 @@ const canSubmit = computed(() => {
     form.value.name &&
     form.value.specialty &&
     form.value.experience &&
+    form.value.intro?.trim() &&
     form.value.pricePerHour != null &&
     form.value.pricePerHour !== '' &&
     !Number.isNaN(Number(form.value.pricePerHour)) &&
@@ -236,6 +265,10 @@ async function submit() {
     errorMessage.value = '경력을 입력해 주세요.';
     return;
   }
+  if (!form.value.intro?.trim()) {
+    errorMessage.value = '짧은 소개를 입력해 주세요.';
+    return;
+  }
   if (form.value.pricePerHour == null || form.value.pricePerHour === '' || Number.isNaN(Number(form.value.pricePerHour)) || Number(form.value.pricePerHour) < 0) {
     errorMessage.value = '가격을 올바르게 입력해 주세요.';
     return;
@@ -257,6 +290,8 @@ async function submit() {
         name: form.value.name.trim(),
         specialty: form.value.specialty.trim(),
         experience: form.value.experience.trim(),
+        intro: form.value.intro.trim(),
+        introLong: form.value.introLong?.trim() || form.value.intro.trim(),
         pricePerHour: Number(form.value.pricePerHour),
         profileImage: form.value.profileImage.trim(),
       }),
@@ -288,6 +323,8 @@ function resetForm() {
     name: '',
     specialty: '',
     experience: '',
+    intro: '',
+    introLong: '',
     pricePerHour: null,
     profileImage: '',
   };
@@ -338,16 +375,26 @@ function resetForm() {
 }
 
 .field input[type="text"],
-.field input[type="number"] {
+.field input[type="number"],
+.field textarea {
   padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 1rem;
+  resize: vertical;
+  line-height: 1.5;
 }
 
+.field textarea:disabled,
 .field input:disabled {
   background: #f3f4f6;
   cursor: not-allowed;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
 }
 
 .field-error {

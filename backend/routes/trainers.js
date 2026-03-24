@@ -252,11 +252,11 @@ trainersRouter.get('/:id', async (req, res) => {
 
 /**
  * POST /api/trainers - 트레이너 등록 (DynamoDB 저장)
- * Body: { id, name, specialty, experience, pricePerHour, profileImage }
+ * Body: { id, name, specialty, experience, pricePerHour, profileImage, intro, introLong? }
  */
 trainersRouter.post('/', async (req, res) => {
   try {
-    const { id, name, specialty, experience, pricePerHour, profileImage } = req.body;
+    const { id, name, specialty, experience, pricePerHour, profileImage, intro, introLong } = req.body;
 
     if (!id || typeof id !== 'string' || !id.trim()) {
       return res.status(400).json({ message: 'id는 필수입니다.' });
@@ -275,6 +275,9 @@ trainersRouter.post('/', async (req, res) => {
     }
     if (!profileImage || typeof profileImage !== 'string' || !profileImage.trim()) {
       return res.status(400).json({ message: 'profileImage(S3 URL)는 필수입니다.' });
+    }
+    if (!intro || typeof intro !== 'string' || !intro.trim()) {
+      return res.status(400).json({ message: 'intro(짧은 소개)는 필수입니다.' });
     }
 
     const trimmedId = String(id).trim();
@@ -300,6 +303,8 @@ trainersRouter.post('/', async (req, res) => {
       experience: String(experience).trim(),
       pricePerHour: price,
       profileImage: String(profileImage).trim(),
+      intro: String(intro).trim(),
+      introLong: introLong != null && String(introLong).trim() ? String(introLong).trim() : String(intro).trim(),
     };
 
     await docClient.send(
@@ -323,12 +328,12 @@ trainersRouter.post('/', async (req, res) => {
 
 /**
  * PUT /api/trainers/:id - 트레이너 수정
- * Body: { name?, specialty?, experience?, pricePerHour?, profileImage? }
+ * Body: { name?, specialty?, experience?, pricePerHour?, profileImage?, intro?, introLong? }
  */
 trainersRouter.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, specialty, experience, pricePerHour, profileImage } = req.body;
+    const { name, specialty, experience, pricePerHour, profileImage, intro, introLong } = req.body;
 
     if (!id?.trim()) {
       return res.status(400).json({ message: 'id가 필요합니다.' });
@@ -346,6 +351,13 @@ trainersRouter.put('/:id', async (req, res) => {
     }
 
     const current = existing.Item;
+    const nextIntro =
+      intro !== undefined && intro !== null ? String(intro).trim() : current.intro ?? '';
+    const nextIntroLong =
+      introLong !== undefined && introLong !== null
+        ? String(introLong).trim()
+        : current.introLong ?? nextIntro;
+
     const updated = {
       ...current,
       name: name !== undefined && name !== null ? String(name).trim() : current.name,
@@ -353,6 +365,8 @@ trainersRouter.put('/:id', async (req, res) => {
       experience: experience !== undefined && experience !== null ? String(experience).trim() : current.experience,
       pricePerHour: pricePerHour !== undefined && pricePerHour !== null ? Number(pricePerHour) : current.pricePerHour,
       profileImage: profileImage !== undefined && profileImage !== null ? String(profileImage).trim() : current.profileImage,
+      intro: nextIntro,
+      introLong: nextIntroLong || nextIntro,
     };
 
     if (!updated.name) {
@@ -369,6 +383,9 @@ trainersRouter.put('/:id', async (req, res) => {
     }
     if (!updated.profileImage) {
       return res.status(400).json({ message: 'profileImage는 필수입니다.' });
+    }
+    if (!updated.intro) {
+      return res.status(400).json({ message: 'intro(짧은 소개)는 필수입니다.' });
     }
 
     await docClient.send(

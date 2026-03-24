@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-primary: #1abc9c;
+  --brand-primary-hover: #16a085;
+  --brand-dark: #1f2a30;
+}
+
 body {
   @apply font-sans antialiased text-slate-800 bg-slate-50;
 }
