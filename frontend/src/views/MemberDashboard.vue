@@ -106,22 +106,35 @@
 
         <!-- ── 다가오는 예약 ── -->
         <div v-if="upcomingReservations.length > 0" class="rounded-2xl border border-blue-200 bg-blue-50 p-5 mb-6">
-          <h2 class="text-sm font-semibold text-blue-800 mb-3">다가오는 예약 ({{ upcomingReservations.length }})</h2>
+          <h2 class="text-sm font-semibold text-blue-800">다가오는 예약 ({{ upcomingReservations.length }})</h2>
+          <p class="text-xs text-blue-700/90 mt-1 mb-3">로그인한 회원은 확정 예약을 여기서 직접 취소할 수 있어요.</p>
           <div class="space-y-2">
             <div
               v-for="r in upcomingReservations"
               :key="r.id"
-              class="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-blue-100"
+              class="flex flex-col gap-3 sm:flex-row sm:items-center bg-white rounded-xl px-4 py-3 border border-blue-100"
             >
-              <div class="w-10 h-10 rounded-xl bg-blue-500 flex flex-col items-center justify-center text-white shrink-0">
-                <p class="text-[10px] leading-none font-medium">{{ r.date.slice(5, 7) }}월</p>
-                <p class="text-base font-bold leading-none">{{ r.date.slice(8, 10) }}</p>
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-blue-500 flex flex-col items-center justify-center text-white shrink-0">
+                  <p class="text-[10px] leading-none font-medium">{{ r.date.slice(5, 7) }}월</p>
+                  <p class="text-base font-bold leading-none">{{ r.date.slice(8, 10) }}</p>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-slate-800">{{ formatDateFull(r.date) }}</p>
+                  <p class="text-xs text-slate-500">{{ r.time }} · {{ r.trainerName || r.trainer || 'PT 세션' }}</p>
+                </div>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-slate-800">{{ formatDateFull(r.date) }}</p>
-                <p class="text-xs text-slate-500">{{ r.time }} · {{ r.trainerName || r.trainer || 'PT 세션' }}</p>
+              <div class="flex items-center justify-end gap-2 shrink-0 sm:ml-auto">
+                <span class="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded-full">예약 확정</span>
+                <button
+                  type="button"
+                  :disabled="cancelingId === r.id"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 disabled:pointer-events-none transition"
+                  @click="cancelUpcoming(r)"
+                >
+                  {{ cancelingId === r.id ? '처리 중…' : '예약 취소' }}
+                </button>
               </div>
-              <span class="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded-full">예약 확정</span>
             </div>
           </div>
         </div>
@@ -248,6 +261,8 @@ import {
   getReservations,
   getUserPasses,
   getTrainers,
+  cancelMemberReservationV2,
+  cancelReservation,
 } from '../api';
 import { formatKoreanPhoneDisplay } from '../utils/phoneFormat';
 import { useMemberAuth } from '../composables/useMemberAuth';
@@ -262,6 +277,7 @@ const userPhone = ref('');
 
 // ── 데이터 ──
 const dataLoading  = ref(false);
+const cancelingId  = ref('');
 const reservations = ref([]);  // 정규화된 전체 예약
 const passes       = ref([]);
 const trainerMap   = ref({});  // trainerId → name
@@ -335,6 +351,28 @@ async function loadData() {
     reservations.value = Array.from(dedup.values());
   } finally {
     dataLoading.value = false;
+  }
+}
+
+async function cancelUpcoming(r) {
+  const label = `${r.trainerName || r.trainer || 'PT'} · ${r.date} ${r.time}`;
+  if (!confirm(`이 예약을 취소할까요?\n${label}`)) return;
+  cancelingId.value = r.id;
+  try {
+    if (r.source === 'v2') {
+      await cancelMemberReservationV2(STORE_ID, r.id, {
+        date: r.date,
+        time: r.time,
+        trainerId: r.trainerId || 'any',
+      });
+    } else {
+      await cancelReservation(r.id);
+    }
+    await loadData();
+  } catch (e) {
+    alert(e.message || '취소에 실패했습니다.');
+  } finally {
+    cancelingId.value = '';
   }
 }
 
