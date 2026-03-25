@@ -2,6 +2,7 @@
 export const navItems = [
   { key: 'home', label: 'Home', href: '/', hasMega: false },
   { key: 'member', label: '회원', hasMega: true },
+  { key: 'theme', label: '메인 선택', hasMega: true },
   { key: 'admin', label: '관리자', hasMega: true },
 ];
 
@@ -104,6 +105,20 @@ export const menuData = {
         description: '이미지 업로드를 테스트합니다.',
         readMore: '/upload-test',
       },
+    ],
+  },
+  theme: {
+    eyebrow: 'THEME',
+    title: '메인 페이지 선택',
+    description: '원하는 메인 스타일을 선택해 미리보기합니다. (?v=...)',
+    overviewLink: '/?v=default',
+    categories: [
+      { id: 't0', title: '기본', description: '현재 기본 메인', readMore: '/?v=default' },
+      { id: 't1', title: 'Alt 1', description: '이미지 히어로 + CTA', readMore: '/?v=alt1' },
+      { id: 't2', title: 'Alt 2', description: '미니멀 그라데이션', readMore: '/?v=alt2' },
+      { id: 't3', title: 'Alt 3', description: '좌우 분할 히어로', readMore: '/?v=alt3' },
+      { id: 't4', title: 'Alt 4', description: '다크 히어로 오버레이', readMore: '/?v=alt4' },
+      { id: 't5', title: 'Alt 5', description: '중앙 카드 히어로', readMore: '/?v=alt5' },
     ],
   },
 };

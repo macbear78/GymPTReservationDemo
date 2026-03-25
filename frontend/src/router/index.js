@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
 
 const routes = [
-  { path: '/', name: 'Home', component: () => import('../views/HomePage.vue'), meta: { title: 'Home' } },
+  { path: '/', name: 'Home', component: () => import('../views/HomeSwitcher.vue'), meta: { title: 'Home' } },
   { path: '/trainers', name: 'Trainers', component: () => import('../views/TrainersPage.vue'), meta: { title: '트레이너 목록' } },
   { path: '/trainers/:id', name: 'TrainerDetail', component: () => import('../views/TrainerDetailPage.vue'), meta: { title: '트레이너 상세' } },
   { path: '/reserve', name: 'Reserve', component: () => import('../views/ReservationPage.vue'), meta: { title: 'PT 예약' } },
