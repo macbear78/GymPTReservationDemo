@@ -1,9 +1,9 @@
 /** Gym PT — 헤더 메가메뉴 데이터 (1인 트레이너 PT샵 톤) */
 export const navItems = [
   { key: 'home', label: 'Home', href: '/', hasMega: false },
-  { key: 'member', label: '회원', hasMega: true },
-  { key: 'theme', label: '메인 선택', hasMega: true },
-  { key: 'admin', label: '관리자', hasMega: true },
+  { key: 'trainers', label: '트레이너', href: '/trainers', hasMega: false },
+  { key: 'passes', label: '프로그램·패스', href: '/passes', hasMega: false },
+  { key: 'reserve', label: 'PT 예약', href: '/reserve', hasMega: false },
 ];
 
 export const menuData = {
