@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-[#f3f4f6] px-4 py-20 sm:px-6"
+    class="analytics-workout bg-[#f3f4f6] px-4 py-20 sm:px-6"
     aria-labelledby="analytics-workout-heading"
   >
     <div
@@ -9,10 +9,11 @@
       <!-- 왼쪽 60%: 이미지 + 플로팅 카드 -->
       <div class="relative w-full shrink-0 lg:w-3/5 lg:pr-6">
         <div
+          v-scroll-animate
+          data-animate="fade-right"
           class="relative h-[500px] w-full overflow-hidden bg-neutral-300 sm:h-[540px]"
         >
           <img
-            v-if="imageSrc"
             :src="imageSrc"
             alt="트레이닝 분석"
             class="h-full w-full object-cover"
@@ -22,6 +23,9 @@
 
         <!-- 오버레이 카드 -->
         <div
+          v-scroll-animate
+          data-animate="zoom-in"
+          data-delay="400"
           class="absolute bottom-10 left-0 z-10 w-[240px] max-w-[calc(100vw-2rem)] -rotate-3 rounded-xl bg-white p-5 shadow-lg shadow-black/10 sm:bottom-14 sm:-left-10 sm:-rotate-6"
         >
           <p class="text-sm font-bold text-neutral-900">트레이닝 유형</p>
@@ -98,6 +102,9 @@
 
       <!-- 오른쪽 40%: 텍스트 -->
       <div
+        v-scroll-animate
+        data-animate="fade-left"
+        data-delay="200"
         class="flex w-full flex-col justify-center lg:w-2/5 lg:pl-12 xl:pl-16"
       >
         <h2
@@ -108,7 +115,7 @@
           <span class="block">분석 기반</span>
           <span class="block">운동 프로그램</span>
         </h2>
-        <p class="mt-6 text-base leading-relaxed text-gray-700 sm:text-lg">
+        <p class="analytics-workout__desc mt-6 text-base leading-relaxed text-gray-700 sm:text-lg">
           노하우 많은 트레이너가 다양한 연구·데이터를 바탕으로 프로그램을 구성합니다.
           회원 맞춤 솔루션으로 목표에 더 빠르게 가까이 갈 수 있도록 돕습니다.
         </p>
@@ -120,15 +127,22 @@
 <script setup>
 import { computed, useId } from 'vue';
 
+/** prop 미지정·빈 문자열일 때 사용하는 데모용 이미지 */
+const DEFAULT_WORKOUT_IMAGE =
+  'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200&q=85';
+
 const props = defineProps({
-  /** 메인 이미지 URL — 비우면 회색 placeholder */
+  /** 메인 이미지 URL — 비우면 기본 스톡 이미지 */
   image: {
     type: String,
     default: '',
   },
 });
 
-const imageSrc = computed(() => props.image?.trim() || '');
+const imageSrc = computed(() => {
+  const t = props.image?.trim();
+  return t || DEFAULT_WORKOUT_IMAGE;
+});
 
 const gradientId = `donutGrad-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
@@ -140,3 +154,25 @@ const strokeDasharray = computed(() => {
   return `${filled} ${circumference}`;
 });
 </script>
+
+<style scoped>
+.analytics-workout__heading {
+  font-size: clamp(2rem, 4.8vw, 3.75rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+.analytics-workout__desc {
+  font-size: 18px;
+  line-height: 1.65;
+  max-width: 36rem;
+}
+@media (max-width: 640px) {
+  .analytics-workout__heading {
+    font-size: clamp(2rem, 7vw, 2.75rem);
+  }
+  .analytics-workout__desc {
+    font-size: 17px;
+  }
+}
+</style>

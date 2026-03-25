@@ -1,3 +1,5 @@
+@import './design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,5 +11,15 @@
 }
 
 body {
-  @apply font-sans antialiased text-slate-800 bg-slate-50;
+  @apply font-sans antialiased;
+  font-size: var(--font-size-body);
+  line-height: 1.55;
+  color: #0e0e0c;
+  background-color: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: max(16px, min(4.6vw, var(--font-size-body)));
+  }
 }

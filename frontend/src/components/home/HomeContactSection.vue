@@ -1,10 +1,20 @@
 <template>
   <section id="contact" class="py-20 sm:py-28 bg-zinc-900">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-14 reveal">
+      <h2
+        v-scroll-animate
+        data-animate="fade-up"
+        data-delay="0"
+        class="text-3xl sm:text-4xl font-bold text-white text-center mb-14"
+      >
         오시는 길 · 문의
       </h2>
-      <div class="rounded-2xl overflow-hidden border border-zinc-700 mb-8 reveal">
+      <div
+        v-scroll-animate
+        data-animate="fade-up"
+        data-delay="200"
+        class="rounded-2xl overflow-hidden border border-zinc-700 mb-8"
+      >
         <iframe
           title="스토어 위치 지도"
           :src="mapEmbedUrl"
@@ -16,7 +26,10 @@
         />
       </div>
       <div
-        class="flex flex-col sm:flex-row gap-8 sm:gap-12 justify-center items-center sm:items-start text-zinc-400 reveal"
+        v-scroll-animate
+        data-animate="fade-up"
+        data-delay="400"
+        class="flex flex-col sm:flex-row gap-8 sm:gap-12 justify-center items-center sm:items-start text-zinc-400"
       >
         <div class="flex items-center gap-4">
           <div

@@ -1,0 +1,74 @@
+/**
+ * 헬스장 홈 공통 디자인 토큰 — 라이트/다크 섹션에서 동일 변수 참조
+ */
+:root {
+  /* 색상 */
+  --color-bg-dark: #0e0e0c;
+  --color-bg-light: #f7f7f5;
+  --color-accent: #d4f24a;
+  --color-text-dark: #0e0e0c;
+  --color-text-light: #f0f0ee;
+  --color-muted-dark: #666663;
+  --color-muted-light: #888884;
+  --color-border-dark: #272724;
+  --color-border-light: #e2e2de;
+
+  /* 타이포그래피 */
+  --font-size-eyebrow: 13px;
+  --font-size-body: 17px;
+  --font-size-section-desc: 18px;
+  --font-size-card-desc: 16px;
+  --font-size-card-title: 1.375rem;
+  --font-size-section-heading-sm: clamp(2.8rem, 5vw, 4rem);
+  --font-size-section-heading-lg: clamp(3.5rem, 7vw, 6rem);
+  --letter-spacing-eyebrow: 0.22em;
+  --letter-spacing-heading: -0.04em;
+
+  /* 간격 */
+  --section-padding-desktop: 80px 60px;
+  --section-padding-mobile: 48px 20px;
+  --card-padding-lg: 64px 48px;
+
+  /* CTA */
+  --cta-padding-y: 16px;
+  --cta-padding-x: 32px;
+  --cta-font-size: 15px;
+  --cta-font-weight: 700;
+  --cta-radius: 8px;
+}
+
+/* 공통 eyebrow (선택적 — 컴포넌트에서 클래스 조합) */
+.ds-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-muted-dark);
+}
+
+.ds-eyebrow__line {
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* 공통 CTA 버튼 (utility) */
+.ds-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--cta-padding-y) var(--cta-padding-x);
+  font-size: var(--cta-font-size);
+  font-weight: var(--cta-font-weight);
+  border-radius: var(--cta-radius);
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  line-height: 1.2;
+}

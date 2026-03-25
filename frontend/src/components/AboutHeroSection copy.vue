@@ -16,7 +16,7 @@
         data-delay="0"
         class="about-hero__tag"
       >
-        <span class="about-hero__tag-line" aria-hidden="true"></span>
+        <span class="about-hero__tag-dot" aria-hidden="true"></span>
         단순한 헬스장이 아닙니다
       </p>
 
@@ -139,7 +139,7 @@ const stats = [
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.25em;
   color: #c4c4c4;
@@ -153,8 +153,7 @@ const stats = [
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--section-padding-desktop, 80px 60px);
-  padding-left: 52px;
+  padding: 80px 60px 80px 52px;
   position: relative;
   z-index: 1;
 }
@@ -164,27 +163,28 @@ const stats = [
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 20px;
 }
-.about-hero__tag-line {
+.about-hero__tag-dot {
   display: inline-block;
-  width: 24px;
-  height: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--accent);
   flex-shrink: 0;
 }
 
 /* 헤딩 */
 .about-hero__heading {
-  font-size: clamp(2rem, 7vw, 6rem);
+  font-size: clamp(2.6rem, 5.5vw, 4.2rem);
   font-weight: 900;
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   color: var(--text-main);
   margin: 0;
 }
@@ -216,11 +216,11 @@ const stats = [
 
 /* 설명 */
 .about-hero__desc {
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.8;
   color: var(--text-muted);
   margin: 0 0 36px;
-  max-width: 500px;
+  max-width: 420px;
 }
 
 /* CTA */
@@ -234,12 +234,12 @@ const stats = [
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 32px;
-  font-size: 15px;
+  padding: 14px 28px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 6px;
   transition: all 0.22s ease;
   cursor: pointer;
   white-space: nowrap;
@@ -291,7 +291,7 @@ const stats = [
   background: #fff;
 }
 .about-hero__stat-num {
-  font-size: clamp(2.4rem, 3.5vw, 3.2rem);
+  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
   font-weight: 900;
   color: var(--text-main);
   letter-spacing: -0.04em;
@@ -299,7 +299,7 @@ const stats = [
   margin-bottom: 4px;
 }
 .about-hero__stat-label {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -351,7 +351,7 @@ const stats = [
     grid-template-columns: 1fr;
   }
   .about-hero__body {
-    padding: var(--section-padding-mobile, 48px 20px);
+    padding: 56px 24px 40px;
   }
   .about-hero__stats {
     grid-column: 1;

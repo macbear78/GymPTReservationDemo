@@ -3,6 +3,12 @@ export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontSize: {
+        body: ['17px', { lineHeight: '1.55' }],
+        'section-desc': ['18px', { lineHeight: '1.65' }],
+        'card-desc': ['16px', { lineHeight: '1.75' }],
+        eyebrow: ['13px', { lineHeight: '1.3', letterSpacing: '0.22em' }],
+      },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', 'sans-serif'],
       },

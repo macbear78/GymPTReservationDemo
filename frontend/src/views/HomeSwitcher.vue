@@ -9,8 +9,8 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 
 const pages = {
-  default: defineAsyncComponent(() => import('./HomePage.vue')),
-  alt1: defineAsyncComponent(() => import('./HomePageV6.vue')), 
+  default: defineAsyncComponent(() => import('./HomePageV6.vue')),
+  alt1: defineAsyncComponent(() => import('./HomePageAlt1.vue')), 
   alt2: defineAsyncComponent(() => import('./HomePageAlt2.vue')),
   alt3: defineAsyncComponent(() => import('./HomePageAlt3.vue')),
   alt4: defineAsyncComponent(() => import('./HomePageAlt4.vue')),

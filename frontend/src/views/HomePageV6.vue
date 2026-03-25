@@ -1,7 +1,7 @@
 <template>
-  <div class="gym-site">
+  <div class="gym-site home-v6-rhythm">
     <HomeHeroV6 :hero="hero" :hero-slides="heroSlides" :featured-program="featuredProgram" />
-    <HomeStatsStrip :stats="stats" />
+
     <AboutHeroSection />
     <AnalyticsWorkoutSection />
     <BreakLimitsSection />
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getStoreInfo } from '../api';
 import { formatKoreanPhoneDisplayOrDash } from '../utils/phoneFormat';
@@ -61,8 +61,8 @@ const storePhoneRaw = ref('02-0000-0000');
 
 const hero = ref({
   image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=85',
-  title: '지금 시작하세요',
-  subtitle: '당신의 몸을 바꿀 시간입니다',
+  title: '지금 시작하세요\n오늘부터 달라질 겁니다.',
+  subtitle: '프리미엄 1:1 퍼스널 트레이닝 · 목표까지 함께합니다',
 });
 
 const aboutSections = ref([
@@ -144,51 +144,8 @@ async function loadStoreInfoForHome() {
   }
 }
 
-let revealObserver = null;
-
-function setupReveal() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'));
-    return;
-  }
-
-  revealObserver = new IntersectionObserver(
-    (entries) => {
-      const handledParents = new Set();
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const el = entry.target;
-        const parent = el.parentElement;
-        if (parent && !handledParents.has(parent)) {
-          const siblings = [...parent.querySelectorAll(':scope > .reveal:not(.is-visible)')];
-          if (siblings.length > 1) {
-            handledParents.add(parent);
-            siblings.forEach((sib, i) => {
-              sib.style.transitionDelay = `${i * 100}ms`;
-              sib.classList.add('is-visible');
-              revealObserver.unobserve(sib);
-            });
-            return;
-          }
-        }
-        el.style.transitionDelay = '0ms';
-        el.classList.add('is-visible');
-        revealObserver.unobserve(el);
-      });
-    },
-    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-  );
-
-  document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
-}
-
 onMounted(() => {
   loadStoreInfoForHome();
-  setupReveal();
-});
-
-onUnmounted(() => {
-  revealObserver?.disconnect();
 });
 </script>
 
@@ -202,24 +159,77 @@ onUnmounted(() => {
   background: #09090b;
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.6s ease-out,
-    transform 0.6s ease-out;
+/**
+ * 홈 V6: 섹션 간 상하 리듬 통일
+ * - 각 블록 컴포넌트에 제각각인 py-* 대신 동일한 세로 간격 적용
+ * - 전체 화면 히어로·100vh 스토리 캐러셀은 레이아웃 유지를 위해 제외
+ */
+.home-v6-rhythm {
+  --home-section-py: clamp(3rem, 5vw, 5rem);
 }
 
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.home-v6-rhythm > :deep(section:not(.hero-v6):not(.v6-story-carousel)) {
+  padding-top: var(--home-section-py) !important;
+  padding-bottom: var(--home-section-py) !important;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+.home-v6-rhythm > :deep(footer) {
+  padding-top: var(--home-section-py) !important;
+  padding-bottom: var(--home-section-py) !important;
+}
+
+/* 히어로: 문구(의도된 줄바꿈) + 배경 대비 */
+.home-v6-rhythm :deep(.hero-v6.hero-v6--slider)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.58) 0%,
+    rgba(0, 0, 0, 0.22) 42%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+}
+
+.home-v6-rhythm :deep(.hero-v6__bg) {
+  z-index: 0;
+}
+
+.home-v6-rhythm :deep(.hero-v6__title) {
+  white-space: pre-line;
+  color: #fff;
+  text-shadow:
+    0 0 1px rgba(0, 0, 0, 0.85),
+    0 2px 18px rgba(0, 0, 0, 0.75),
+    0 4px 36px rgba(0, 0, 0, 0.4);
+}
+
+.home-v6-rhythm :deep(.hero-v6__subtitle) {
+  color: rgba(255, 255, 255, 0.97);
+  font-size: clamp(0.875rem, 2.2vw, 1rem);
+  font-weight: 600;
+  text-shadow:
+    0 1px 10px rgba(0, 0, 0, 0.88),
+    0 0 1px rgba(0, 0, 0, 0.9);
+}
+
+/* 통계 바: 톤 다운 + 라벨 가독성 (V6만) */
+.home-v6-rhythm :deep(section.home-v6-stats) {
+  background-color: #0a0a0b !important;
+  border-top-color: rgba(255, 255, 255, 0.07) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.home-v6-rhythm :deep(.home-v6-stats .home-v6-stat-value) {
+  color: #f4f4f5 !important;
+}
+
+.home-v6-rhythm :deep(.home-v6-stats .home-v6-stat-label) {
+  color: #c4c4cc !important;
+  font-size: clamp(15px, 2.2vw, 17px) !important;
+  font-weight: 500;
+  line-height: 1.45;
 }
 </style>

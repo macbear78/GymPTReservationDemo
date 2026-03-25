@@ -1,88 +1,367 @@
 <template>
-  <section
-    class="relative overflow-x-hidden bg-white px-4 py-20 text-center sm:px-6"
-    aria-labelledby="trainers-section-heading"
-  >
-    <!-- 헤더 -->
-    <header class="relative mx-auto mb-12 max-w-5xl sm:mb-16">
-      <p
-        class="pointer-events-none absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap font-bold leading-none text-neutral-900/[0.09] text-[clamp(2.75rem,11vw,8rem)]"
-        aria-hidden="true"
-      >
-        트레이너
-      </p>
-      <h2
-        id="trainers-section-heading"
-        class="relative z-10 mx-auto max-w-4xl text-4xl font-black leading-tight text-black sm:text-5xl"
-      >
-        <span class="block">전문</span>
-        <span class="block">퍼스널 트레이너</span>
-        <span class="block">팀을 만나보세요</span>
-      </h2>
-    </header>
+  <section class="trainers" aria-labelledby="trainers-heading">
 
-    <!-- 카드 그리드 -->
-    <div
-      class="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-    >
-      <article
-        v-for="trainer in items"
-        :key="trainer.id"
-        class="flex flex-col"
-      >
-        <div
-          class="relative overflow-hidden rounded-lg bg-[#e5e5e5]"
-          :style="{ aspectRatio: '1 / 1' }"
+    <!-- 상단 헤더 바 -->
+    <div class="trainers__header">
+      <div class="trainers__header-inner">
+        <span class="trainers__eyebrow">
+          <span class="trainers__eyebrow-line" aria-hidden="true"></span>
+          OUR TEAM
+        </span>
+        <h2
+          id="trainers-heading"
+          v-scroll-animate
+          data-animate="fade-up"
+          data-delay="0"
+          class="trainers__heading"
         >
+          전문 퍼스널<br />
+          <em class="trainers__heading-em">트레이너</em>팀
+        </h2>
+      </div>
+
+      <!-- 오른쪽: 총 인원 카운터 -->
+      <div class="trainers__count" aria-hidden="true">
+        <span class="trainers__count-num">0{{ items.length }}</span>
+        <span class="trainers__count-label">TRAINERS</span>
+      </div>
+    </div>
+
+    <!-- 카드 행 -->
+    <ul class="trainers__list" role="list">
+      <li
+        v-for="(trainer, index) in items"
+        :key="trainer.id"
+        v-scroll-animate
+        data-animate="fade-up"
+        :data-delay="String(index * 120)"
+        class="trainers__item"
+      >
+        <!-- 번호 뱃지 -->
+        <span class="trainers__item-num" aria-hidden="true">
+          {{ String(index + 1).padStart(2, '0') }}
+        </span>
+
+        <!-- 이미지 -->
+        <div class="trainers__img-wrap">
           <img
-            v-if="trainer.image"
             :src="trainer.image"
             :alt="trainer.name"
-            class="h-full w-full object-cover object-top"
+            class="trainers__img"
             loading="lazy"
           />
-          <button
-            type="button"
-            class="absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center bg-[#e63946] text-xl font-light leading-none text-white transition hover:bg-[#c82f3a]"
-            :aria-label="`${trainer.name} 상세 보기`"
-            @click="emit('select-trainer', trainer)"
-          >
-            +
-          </button>
+          <!-- 호버 오버레이 -->
+          <div class="trainers__overlay" aria-hidden="true">
+            <button
+              type="button"
+              class="trainers__detail-btn"
+              :aria-label="`${trainer.name} 상세 보기`"
+              @click="emit('select-trainer', trainer)"
+            >
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <!-- 포지션 태그 -->
+          <span class="trainers__tag">{{ trainer.role }}</span>
         </div>
-        <div class="pt-4 pb-2 text-center">
-          <h3 class="text-lg font-black text-black">
-            {{ trainer.name }}
-          </h3>
-          <p class="mt-1 text-sm tracking-wide text-gray-500">
-            {{ trainer.role }}
-          </p>
+
+        <!-- 텍스트 -->
+        <div class="trainers__info">
+          <h3 class="trainers__name">{{ trainer.name }}</h3>
+          <div class="trainers__meta">
+            <span
+              v-for="spec in trainer.specs"
+              :key="spec"
+              class="trainers__spec"
+            >{{ spec }}</span>
+          </div>
         </div>
-      </article>
+      </li>
+    </ul>
+
+    <!-- 하단 장식 바 -->
+    <div class="trainers__footer" aria-hidden="true">
+      <span
+        v-for="n in 6"
+        :key="n"
+        class="trainers__footer-block"
+        :style="`opacity: ${0.06 + n * 0.04}`"
+      ></span>
     </div>
+
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from 'vue'
 
-/** @type {{ id: number, name: string, role: string, image: string }[]} */
+const FALLBACKS = [
+  'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=85',
+  'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&q=85',
+  'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=800&q=85',
+]
+
 const DEFAULT_TRAINERS = [
-  { id: 1, name: '김준호', role: '퍼스널 코치', image: '' },
-  { id: 2, name: '이서연', role: '퍼스널 코치', image: '' },
-  { id: 3, name: '박도윤', role: '퍼스널 코치', image: '' },
-];
+  { id: 1, name: '김준호', role: '퍼스널 코치', image: '', specs: ['웨이트', 'HIIT'] },
+  { id: 2, name: '이서연', role: '퍼스널 코치', image: '', specs: ['요가', '재활'] },
+  { id: 3, name: '박도윤', role: '퍼스널 코치', image: '', specs: ['크로스핏', '역도'] },
+]
 
 const props = defineProps({
-  trainers: {
-    type: Array,
-    default: null,
-  },
-});
+  trainers: { type: Array, default: null },
+})
+const emit = defineEmits(['select-trainer'])
 
-const emit = defineEmits(['select-trainer']);
-
-const items = computed(() =>
-  props.trainers?.length ? props.trainers : DEFAULT_TRAINERS
-);
+const items = computed(() => {
+  const raw = props.trainers?.length ? props.trainers : DEFAULT_TRAINERS
+  return raw.map((t, i) => ({
+    specs: [],
+    ...t,
+    image: t.image?.trim() || FALLBACKS[i % FALLBACKS.length],
+  }))
+})
 </script>
+
+<style scoped>
+/* ─── 토큰 ────────────────────────────────── */
+.trainers {
+  --bg: #0e0e0c;
+  --surface: #181816;
+  --accent: #d4f24a;
+  --text: #f0f0ee;
+  --muted: #6b6b68;
+  --border: #2a2a28;
+  --radius: 10px;
+
+  background: var(--bg);
+  color: var(--text);
+  padding: 80px 0 0;
+  overflow: hidden;
+}
+
+/* ─── 헤더 ───────────────────────────────── */
+.trainers__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 60px 48px;
+  border-bottom: 1px solid var(--border);
+  gap: 24px;
+}
+.trainers__header-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.trainers__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.trainers__eyebrow-line {
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.trainers__heading {
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.trainers__heading-em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* 인원 카운터 */
+.trainers__count {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.trainers__count-num {
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: var(--text);
+}
+.trainers__count-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── 카드 리스트 ────────────────────────── */
+.trainers__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.trainers__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  padding: 40px 36px 0;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.trainers__item:last-child { border-right: none; }
+.trainers__item:hover { background: var(--surface); }
+
+/* 번호 */
+.trainers__item-num {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* 이미지 래퍼 */
+.trainers__img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #2a2a28;
+}
+.trainers__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.trainers__item:hover .trainers__img {
+  transform: scale(1.04);
+}
+
+/* 호버 오버레이 */
+.trainers__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 14, 12, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.trainers__item:hover .trainers__overlay { opacity: 1; }
+.trainers__detail-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.trainers__detail-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.trainers__detail-btn:hover {
+  background: var(--accent);
+  color: #0e0e0c;
+}
+
+/* 포지션 태그 */
+.trainers__tag {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(14, 14, 12, 0.78);
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+/* 텍스트 */
+.trainers__info {
+  padding: 20px 0 36px;
+}
+.trainers__name {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+.trainers__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.trainers__spec {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: rgba(212, 242, 74, 0.1);
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 242, 74, 0.2);
+}
+
+/* ─── 하단 장식 바 ───────────────────────── */
+.trainers__footer {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  height: 8px;
+  margin-top: 0;
+}
+.trainers__footer-block {
+  background: var(--accent);
+  display: block;
+}
+
+/* ─── 반응형 ─────────────────────────────── */
+@media (max-width: 900px) {
+  .trainers__header { padding: 0 32px 36px; }
+  .trainers__list { grid-template-columns: repeat(2, 1fr); }
+  .trainers__item:nth-child(2) { border-right: none; }
+  .trainers__item { padding: 32px 24px 0; }
+}
+@media (max-width: 600px) {
+  .trainers__header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 20px 28px;
+  }
+  .trainers__list { grid-template-columns: 1fr; }
+  .trainers__item { border-right: none; border-bottom: 1px solid var(--border); padding: 28px 20px 0; }
+  .trainers__item:last-child { border-bottom: none; }
+}
+</style>

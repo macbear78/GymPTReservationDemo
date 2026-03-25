@@ -1,6 +1,12 @@
 <template>
   <section class="hero-v6 hero-v6--slider">
-    <div class="hero-v6__bg" aria-hidden="true">
+    <div
+      class="hero-v6__bg"
+      aria-hidden="true"
+      v-scroll-animate
+      data-animate="zoom-out"
+      data-animate-on-load="true"
+    >
       <img
         v-for="(src, i) in heroSlides"
         :key="`${src}-${i}`"
@@ -11,11 +17,22 @@
       />
     </div>
 
-    <h1 class="hero-v6__title">
+    <h1
+      class="hero-v6__title"
+      v-scroll-animate
+      data-animate="fade-up"
+      data-delay="0"
+    >
       {{ hero.title }}
     </h1>
 
-    <div v-if="featuredProgram" class="hero-v6__program-card">
+    <div
+      v-if="featuredProgram"
+      v-scroll-animate
+      data-animate="fade-up"
+      data-delay="400"
+      class="hero-v6__program-card"
+    >
       <img
         :src="featuredProgram.image"
         :alt="featuredProgram.title"
@@ -30,7 +47,14 @@
     </div>
 
     <div class="hero-v6__footer">
-      <p class="hero-v6__subtitle">{{ hero.subtitle }}</p>
+      <p
+        class="hero-v6__subtitle"
+        v-scroll-animate
+        data-animate="fade-up"
+        data-delay="200"
+      >
+        {{ hero.subtitle }}
+      </p>
       <div class="hero-v6__dots" role="tablist" aria-label="히어로 슬라이드">
         <button
           v-for="i in slideCount"
