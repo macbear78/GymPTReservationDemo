@@ -8,9 +8,11 @@ defineProps({
 });
 import { useStoreInfo }   from "../composables/useStoreInfo.js";
 import { useMemberAuth }  from "../composables/useMemberAuth.js";
+import { useAuth }        from "../composables/useAuth.js";
 
 const { storeName, logoImage, logoText, load: loadStoreInfo } = useStoreInfo();
 const { isLoggedIn, name: memberName, clearSession, checkToken } = useMemberAuth();
+const { isLoggedIn: isAdminLoggedIn, checkToken: checkAdminToken } = useAuth();
 
 const activeMenuKey = ref(null);
 const mobileOpen = ref(false);
@@ -61,6 +63,7 @@ onMounted(() => {
   onScroll();
   loadStoreInfo();
   checkToken();
+  checkAdminToken();
 });
 
 onUnmounted(() => {
@@ -158,6 +161,39 @@ onUnmounted(() => {
             <p class="header__mega-eyebrow">{{ activeMenu.eyebrow }}</p>
             <h3 class="header__mega-title">{{ activeMenu.title }}</h3>
             <p class="header__mega-desc">{{ activeMenu.description }}</p>
+
+            <!-- 회원 메뉴: 로그인 상태 표시 -->
+            <template v-if="activeMenuKey === 'member'">
+              <div v-if="isLoggedIn" class="header__mega-auth header__mega-auth--ok">
+                <span class="header__mega-auth-dot"></span>
+                {{ memberName }}님 로그인됨
+              </div>
+              <div v-else class="header__mega-auth header__mega-auth--locked">
+                <span>🔒</span>
+                <div>
+                  <p class="header__mega-auth-msg">로그인 후 이용 가능합니다</p>
+                  <p class="header__mega-auth-hint">010-0000-0001 / demo1234</p>
+                </div>
+                <router-link to="/login" class="header__mega-auth-btn" @click="closeMenu">로그인</router-link>
+              </div>
+            </template>
+
+            <!-- 관리자 메뉴: 로그인 상태 표시 -->
+            <template v-if="activeMenuKey === 'admin'">
+              <div v-if="isAdminLoggedIn" class="header__mega-auth header__mega-auth--ok">
+                <span class="header__mega-auth-dot"></span>
+                관리자 로그인됨
+              </div>
+              <div v-else class="header__mega-auth header__mega-auth--locked">
+                <span>🔒</span>
+                <div>
+                  <p class="header__mega-auth-msg">관리자 로그인 후 이용 가능합니다</p>
+                  <p class="header__mega-auth-hint">비밀번호: admin1234</p>
+                </div>
+                <router-link to="/admin/login" class="header__mega-auth-btn" @click="closeMenu">로그인</router-link>
+              </div>
+            </template>
+
             <router-link
               v-if="activeMenu.overviewLink"
               :to="activeMenu.overviewLink"
@@ -171,13 +207,22 @@ onUnmounted(() => {
             <router-link
               v-for="cat in activeMenu.categories"
               :key="cat.id"
-              :to="cat.readMore"
+              :to="(activeMenuKey === 'member' && !isLoggedIn) || (activeMenuKey === 'admin' && !isAdminLoggedIn)
+                ? (activeMenuKey === 'admin' ? '/admin/login' : '/login')
+                : cat.readMore"
               class="header__mega-card"
+              :class="{
+                'header__mega-card--locked':
+                  (activeMenuKey === 'member' && !isLoggedIn) ||
+                  (activeMenuKey === 'admin' && !isAdminLoggedIn)
+              }"
               @click="closeMenu"
             >
               <div class="header__mega-card-top">
                 <h4 class="header__mega-card-title">{{ cat.title }}</h4>
-                <span class="header__mega-card-arrow">→</span>
+                <span class="header__mega-card-arrow">
+                  {{ (activeMenuKey === 'member' && !isLoggedIn) || (activeMenuKey === 'admin' && !isAdminLoggedIn) ? '🔒' : '→' }}
+                </span>
               </div>
               <p class="header__mega-card-desc">{{ cat.description }}</p>
             </router-link>
@@ -644,6 +689,62 @@ onUnmounted(() => {
   font-weight: 600;
 }
 .header__mega-overview:hover { color: var(--brand-primary); }
+
+/* 인증 상태 배지 */
+.header__mega-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.header__mega-auth--ok {
+  background: rgba(26, 188, 156, 0.12);
+  border: 1px solid rgba(26, 188, 156, 0.25);
+  color: #1abc9c;
+  font-weight: 600;
+}
+.header__mega-auth-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1abc9c;
+  flex-shrink: 0;
+}
+.header__mega-auth--locked {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+.header__mega-auth--locked > span:first-child { font-size: 16px; flex-shrink: 0; }
+.header__mega-auth--locked > div { flex: 1; min-width: 0; }
+.header__mega-auth-msg { margin: 0; font-size: 12px; font-weight: 600; }
+.header__mega-auth-hint { margin: 2px 0 0; font-size: 11px; color: rgba(255,255,255,0.4); }
+.header__mega-auth-btn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--brand-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.header__mega-auth-btn:hover { background: var(--brand-primary-hover); }
+
+/* 잠긴 카드 */
+.header__mega-card--locked {
+  opacity: 0.55;
+  cursor: default;
+}
+.header__mega-card--locked:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
 .header__mega-grid {
   padding: 24px;
   display: grid;
