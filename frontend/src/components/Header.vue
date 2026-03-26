@@ -1,6 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { navItems } from "../data/menuData.js";
+
+defineProps({
+  /** Portfolio demo banner height — header sits below fixed banner */
+  topOffset: { type: Number, default: 0 },
+});
 import { useStoreInfo }   from "../composables/useStoreInfo.js";
 import { useMemberAuth }  from "../composables/useMemberAuth.js";
 
@@ -47,6 +52,7 @@ onUnmounted(() => {
   <header
     class="header"
     :class="{ 'header--scrolled': isScrolled }"
+    :style="{ top: `${topOffset}px` }"
   >
     <div class="header__bar">
       <div class="header__inner">
@@ -88,6 +94,13 @@ onUnmounted(() => {
           </template>
           <router-link v-else to="/login" class="header__login-link">로그인</router-link>
           <router-link to="/reserve" class="header__cta">PT 예약</router-link>
+
+          <router-link to="/admin/login" class="header__admin-btn" aria-label="관리자">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </router-link>
 
           <button
             type="button"
@@ -147,7 +160,11 @@ onUnmounted(() => {
           </nav>
 
           <router-link to="/reserve" class="header__mobile-cta" @click="closeMobile">
-            PT 예약
+            지금 무료 상담 받기
+          </router-link>
+
+          <router-link to="/admin/login" class="header__mobile-admin" @click="closeMobile">
+            🔒 관리자 로그인
           </router-link>
         </div>
       </div>
@@ -215,12 +232,19 @@ onUnmounted(() => {
 .header__login-link {
   display: none;
   font-size: 13px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.75);
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
   text-decoration: none;
-  transition: color 0.2s;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: background 0.2s, color 0.2s;
 }
-.header__login-link:hover { color: #fff; }
+.header__login-link:hover {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
 
 .header__member-link {
   display: none;
@@ -466,6 +490,48 @@ onUnmounted(() => {
 .header__mobile-cta:hover {
   background: var(--brand-primary-hover);
   color: #fff;
+}
+
+/* 관리자 아이콘 버튼 */
+.header__admin-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.header__admin-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.header__admin-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.08);
+}
+@media (min-width: 1025px) {
+  .header__admin-btn { display: inline-flex; }
+}
+
+/* 모바일 관리자 링크 */
+.header__mobile-admin {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 0.2s;
+}
+.header__mobile-admin:hover {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* transitions */
