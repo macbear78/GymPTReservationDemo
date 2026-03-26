@@ -12,7 +12,11 @@ import { useAuth }        from "../composables/useAuth.js";
 
 const { storeName, logoImage, logoText, load: loadStoreInfo } = useStoreInfo();
 const { isLoggedIn, name: memberName, clearSession, checkToken } = useMemberAuth();
-const { isLoggedIn: isAdminLoggedIn, checkToken: checkAdminToken } = useAuth();
+const { isLoggedIn: isAdminLoggedIn, checkToken: checkAdminToken, token: adminToken } = useAuth();
+
+// 토큰 존재 여부로 즉시 잠금 여부 판단 (verified 비동기 대기 불필요)
+const memberLocked = computed(() => !isLoggedIn.value);
+const adminLocked  = computed(() => !adminToken.value);
 
 const activeMenuKey = ref(null);
 const mobileOpen = ref(false);
@@ -164,7 +168,7 @@ onUnmounted(() => {
 
             <!-- 회원 메뉴: 로그인 상태 표시 -->
             <template v-if="activeMenuKey === 'member'">
-              <div v-if="isLoggedIn" class="header__mega-auth header__mega-auth--ok">
+              <div v-if="!memberLocked" class="header__mega-auth header__mega-auth--ok">
                 <span class="header__mega-auth-dot"></span>
                 {{ memberName }}님 로그인됨
               </div>
@@ -180,7 +184,7 @@ onUnmounted(() => {
 
             <!-- 관리자 메뉴: 로그인 상태 표시 -->
             <template v-if="activeMenuKey === 'admin'">
-              <div v-if="isAdminLoggedIn" class="header__mega-auth header__mega-auth--ok">
+              <div v-if="!adminLocked" class="header__mega-auth header__mega-auth--ok">
                 <span class="header__mega-auth-dot"></span>
                 관리자 로그인됨
               </div>
@@ -207,21 +211,23 @@ onUnmounted(() => {
             <router-link
               v-for="cat in activeMenu.categories"
               :key="cat.id"
-              :to="(activeMenuKey === 'member' && !isLoggedIn) || (activeMenuKey === 'admin' && !isAdminLoggedIn)
-                ? (activeMenuKey === 'admin' ? '/admin/login' : '/login')
-                : cat.readMore"
+              :to="(activeMenuKey === 'member' && memberLocked)
+                ? '/login'
+                : (activeMenuKey === 'admin' && adminLocked)
+                  ? '/admin/login'
+                  : cat.readMore"
               class="header__mega-card"
               :class="{
                 'header__mega-card--locked':
-                  (activeMenuKey === 'member' && !isLoggedIn) ||
-                  (activeMenuKey === 'admin' && !isAdminLoggedIn)
+                  (activeMenuKey === 'member' && memberLocked) ||
+                  (activeMenuKey === 'admin' && adminLocked)
               }"
               @click="closeMenu"
             >
               <div class="header__mega-card-top">
                 <h4 class="header__mega-card-title">{{ cat.title }}</h4>
                 <span class="header__mega-card-arrow">
-                  {{ (activeMenuKey === 'member' && !isLoggedIn) || (activeMenuKey === 'admin' && !isAdminLoggedIn) ? '🔒' : '→' }}
+                  {{ (activeMenuKey === 'member' && memberLocked) || (activeMenuKey === 'admin' && adminLocked) ? '🔒' : '→' }}
                 </span>
               </div>
               <p class="header__mega-card-desc">{{ cat.description }}</p>
@@ -737,13 +743,17 @@ onUnmounted(() => {
 
 /* 잠긴 카드 */
 .header__mega-card--locked {
-  opacity: 0.55;
-  cursor: default;
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
 }
 .header__mega-card--locked:hover {
   transform: none;
   border-color: rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
+}
+.header__mega-card--locked .header__mega-card-arrow {
+  font-size: 14px;
 }
 .header__mega-grid {
   padding: 24px;
