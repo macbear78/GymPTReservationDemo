@@ -1,6 +1,18 @@
 <template>
   <div class="space-y-6">
 
+    <!-- 선택된 트레이너 & 프로그램 안내 -->
+    <section
+      v-if="queryTrainer || queryProgram"
+      class="rounded-2xl border border-primary-700/40 bg-primary-950/20 p-4 sm:p-6 flex items-center gap-4"
+    >
+      <div class="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400 text-lg shrink-0">🏋️</div>
+      <div class="min-w-0">
+        <p v-if="queryProgram" class="text-primary-400 text-xs font-semibold uppercase tracking-wide">{{ queryProgram }}</p>
+        <p v-if="queryTrainer" class="text-white font-bold text-base">{{ queryTrainer }} 트레이너</p>
+      </div>
+    </section>
+
     <!-- Step 1: 전화번호 입력 -->
     <section class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6">
       <label class="block text-sm font-medium text-slate-300 mb-3">
@@ -167,74 +179,6 @@
         </div>
       </section>
 
-      <!-- Step 4: 트레이너 (2명 이상일 때만 표시, 1인 샵에서는 숨김) -->
-      <section
-        v-if="trainers.length > 1"
-        class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6"
-      >
-        <div class="flex items-center justify-between mb-3">
-          <label class="text-sm font-medium text-slate-300">트레이너 선택</label>
-          <span class="text-xs text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">선택사항</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <!-- 미선택 옵션 -->
-          <button
-            type="button"
-            :class="[
-              'flex items-center gap-3 p-3 rounded-xl border-2 transition text-left',
-              !form.trainerId
-                ? 'border-primary-500 bg-primary-950/30'
-                : 'border-white/10 hover:border-white/20',
-            ]"
-            @click="form.trainerId = null"
-          >
-            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-slate-400 text-xs font-bold shrink-0">
-              무관
-            </div>
-            <div>
-              <p class="font-medium text-slate-300 text-sm">트레이너 무관</p>
-              <p class="text-slate-500 text-xs">아무 트레이너나 배정</p>
-            </div>
-          </button>
-          <button
-            v-for="t in trainers"
-            :key="t.id"
-            type="button"
-            :class="[
-              'flex items-center gap-3 p-3 rounded-xl border-2 transition text-left',
-              form.trainerId === t.id
-                ? 'border-primary-500 bg-primary-950/30'
-                : 'border-white/10 hover:border-white/20',
-            ]"
-            @click="selectTrainer(t)"
-          >
-            <div
-              class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 bg-cover bg-center"
-              :style="t.profileImage ? { backgroundImage: `url(${t.profileImage})` } : {}"
-              :class="!t.profileImage ? avatarColor(t.id) : ''"
-            >
-              <span v-if="!t.profileImage">{{ t.name.charAt(0) }}</span>
-            </div>
-            <div class="min-w-0">
-              <p class="font-medium text-slate-300 text-sm truncate">{{ t.name }}</p>
-              <p class="text-slate-500 text-xs truncate">{{ t.specialty }}</p>
-            </div>
-          </button>
-        </div>
-      </section>
-
-      <!-- Step 5: PT 유형 (1인일 때 Step 4) -->
-      <section class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6">
-        <label class="block text-sm font-medium text-slate-300 mb-2">PT 유형</label>
-        <select
-          v-model="form.ptType"
-          class="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1e1e1e] focus:ring-2 focus:ring-primary-500 outline-none transition text-white"
-        >
-          <option value="60min">60분</option>
-          <option value="30min">30분</option>
-        </select>
-      </section>
-
       <!-- 예약 요약 -->
       <section
         v-if="form.date && form.time"
@@ -254,13 +198,13 @@
             <dt class="text-slate-400">시간</dt>
             <dd class="font-medium text-white">{{ form.time }}</dd>
           </div>
-          <div v-if="selectedTrainer && trainers.length > 1" class="flex justify-between gap-2">
+          <div v-if="queryTrainer" class="flex justify-between gap-2">
             <dt class="text-slate-400">트레이너</dt>
-            <dd class="font-medium text-white">{{ selectedTrainer.name }}</dd>
+            <dd class="font-medium text-white">{{ queryTrainer }}</dd>
           </div>
-          <div class="flex justify-between gap-2">
-            <dt class="text-slate-400">PT</dt>
-            <dd class="font-medium text-white">{{ form.ptType }}</dd>
+          <div v-if="queryProgram" class="flex justify-between gap-2">
+            <dt class="text-slate-400">프로그램</dt>
+            <dd class="font-medium text-white">{{ queryProgram }}</dd>
           </div>
           <div v-if="form.passId" class="flex justify-between gap-2">
             <dt class="text-slate-400">패스 차감</dt>
@@ -289,7 +233,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import CalendarPicker from './CalendarPicker.vue';
 import { lookupUser as lookupUserApi, getAvailableSlotsV2, createReservationV2, getTrainers, getUserPasses } from '../api';
 import { formatKoreanPhoneAsYouType } from '../utils/phoneFormat.js';
@@ -297,6 +241,10 @@ import { formatKoreanPhoneAsYouType } from '../utils/phoneFormat.js';
 const STORE_ID = 'store_default';
 
 const router = useRouter();
+const route = useRoute();
+
+const queryTrainer = computed(() => route.query.trainer || '');
+const queryProgram = computed(() => route.query.program || '');
 
 function onPhoneInput(e) {
   phone.value = formatKoreanPhoneAsYouType(e.target.value);
@@ -353,6 +301,12 @@ async function lookupUser() {
     ]);
     const list = trainerList.status === 'fulfilled' ? trainerList.value : [];
     trainers.value = list;
+    // 쿼리 파라미터로 전달된 트레이너 자동 선택
+    const qTrainer = route.query.trainer;
+    if (qTrainer && list.length > 1) {
+      const match = list.find(t => t.name === qTrainer);
+      if (match) form.value.trainerId = match.id;
+    }
     // 1인 트레이너 샵: 자동 선택
     if (list.length === 1) {
       form.value.trainerId = list[0].id;
@@ -411,7 +365,20 @@ async function onSubmit() {
       ptType: form.value.ptType,
       ...(form.value.passId && { passId: form.value.passId }),
     });
-    router.push({ name: 'Complete', state: { reservation: { ...res, name: user.value.name, phone: user.value.phone } } });
+    router.push({
+      name: 'Complete',
+      state: {
+        reservation: {
+          ...res,
+          name: user.value.name,
+          phone: phone.value,
+          date: form.value.date,
+          time: form.value.time,
+          trainer: queryTrainer.value || undefined,
+          program: queryProgram.value || undefined,
+        },
+      },
+    });
   } catch (e) {
     submitError.value = e.message || '예약에 실패했습니다.';
   } finally {

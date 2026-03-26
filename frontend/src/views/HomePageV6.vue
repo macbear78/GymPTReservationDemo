@@ -1,13 +1,13 @@
 <template>
   <div class="gym-site home-v6-rhythm">
-    <HomeHeroV6 :hero="hero" :hero-slides="heroSlides" :featured-program="featuredProgram" />
+    <HomeHeroV6 :hero="hero" :hero-slides="heroSlides" :featured-program="featuredProgram" @inquiry="inquiryOpen = true" />
 
     <AboutHeroSection />
     <AnalyticsWorkoutSection />
     <BreakLimitsSection />
     <FeaturesSection />
     <ClassesSliderSection />
-    <TrainersSection @select-trainer="onTrainerSelect" />
+    <TrainersSection :trainers="trainersData" @select-trainer="onTrainerSelect" />
     <HomeStoryCarouselV6 />
     <InstagramSection @open-post="onInstagramPost" />
     <HomeContactSection
@@ -26,7 +26,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getStoreInfo } from '../api';
+import { getStoreInfo, getTrainers } from '../api';
 import { formatKoreanPhoneDisplayOrDash } from '../utils/phoneFormat';
 import InquiryModal from '../components/InquiryModal.vue';
 import HomeHeroV6 from '../components/home/HomeHeroV6.vue';
@@ -44,6 +44,7 @@ import FeaturesSection from '../components/FeaturesSection.vue';
 
 const router = useRouter();
 const inquiryOpen = ref(false);
+const trainersData = ref([]);
 
 function onTrainerSelect(trainer) {
   router.push({ name: 'TrainerDetail', params: { id: String(trainer.id) } });
@@ -148,6 +149,7 @@ async function loadStoreInfoForHome() {
 
 onMounted(() => {
   loadStoreInfoForHome();
+  getTrainers().then(list => { trainersData.value = list; }).catch(() => {});
 });
 </script>
 

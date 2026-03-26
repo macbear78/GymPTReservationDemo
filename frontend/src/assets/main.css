@@ -10,6 +10,10 @@
   --brand-dark:          #0a0a0a;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   @apply font-sans antialiased;
   font-size: var(--font-size-body);
@@ -26,7 +30,7 @@ body {
 
 /* ── 전역 다크 테마 오버라이드 ─────────────────────────────────────── */
 
-/* 밝은 배경 카드 → 다크 카드 */
+/* 배경 — 카드/섹션 */
 .bg-white,
 .bg-slate-50,
 .bg-gray-50,
@@ -34,10 +38,22 @@ body {
   background-color: var(--color-bg-card) !important;
 }
 
-/* 섹션 배경 */
 .bg-slate-100,
-.bg-slate-200 {
-  background-color: #111111 !important;
+.bg-slate-200,
+.bg-gray-200 {
+  background-color: #1a1a1a !important;
+}
+
+/* hover 배경 */
+.hover\:bg-slate-50:hover,
+.hover\:bg-slate-50\/80:hover,
+.hover\:bg-gray-50:hover {
+  background-color: rgba(255,255,255,0.04) !important;
+}
+
+.hover\:bg-slate-100:hover,
+.hover\:bg-slate-200:hover {
+  background-color: rgba(255,255,255,0.07) !important;
 }
 
 /* 텍스트 */
@@ -52,13 +68,11 @@ body {
 .text-slate-600,
 .text-gray-700,
 .text-gray-600 {
-  color: #e2e8f0 !important;
+  color: #cbd5e1 !important;
 }
 
 .text-slate-500,
-.text-slate-400,
-.text-gray-500,
-.text-gray-400 {
+.text-gray-500 {
   color: var(--color-text-muted) !important;
 }
 
@@ -74,16 +88,46 @@ body {
   border-color: rgba(255,255,255,0.05) !important;
 }
 
-/* 입력 필드 */
-input, textarea, select {
-  background-color: #1e1e1e;
-  color: var(--color-text);
-  border-color: var(--color-border);
+/* 입력 필드 & 선택 */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: var(--color-border) !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--color-text-muted);
+  color: var(--color-text-muted) !important;
+}
+
+select option {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+/* 테이블 */
+table {
+  background-color: transparent !important;
+}
+
+thead,
+.bg-slate-50.border-b {
+  background-color: rgba(255,255,255,0.03) !important;
+}
+
+th {
+  color: #94a3b8 !important;
+  border-color: var(--color-border) !important;
+}
+
+td {
+  border-color: rgba(255,255,255,0.05) !important;
+}
+
+tr:hover {
+  background-color: rgba(255,255,255,0.03) !important;
 }
 
 /* 구분선 */
@@ -91,4 +135,44 @@ hr,
 .divide-slate-200 > * + *,
 .divide-gray-200 > * + * {
   border-color: var(--color-border) !important;
+}
+
+/* 옐로우/앰버 상태 카드 (admin stats pending) */
+.bg-yellow-50 {
+  background-color: #1a1500 !important;
+}
+.border-yellow-200 {
+  border-color: rgba(234,179,8,0.25) !important;
+}
+.text-yellow-700 {
+  color: #fbbf24 !important;
+}
+
+/* ── 모바일 여백 전역 조정 ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* 페이지 최대폭 컨테이너 좌우 패딩 축소 */
+  .max-w-6xl.mx-auto,
+  .max-w-7xl.mx-auto,
+  .max-w-3xl.mx-auto,
+  .max-w-2xl.mx-auto,
+  .max-w-md.mx-auto {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* 섹션 세로 패딩 축소 */
+  .py-8 { padding-top: 24px !important; padding-bottom: 24px !important; }
+  .py-12 { padding-top: 32px !important; padding-bottom: 32px !important; }
+
+  /* 카드 내부 패딩 */
+  .p-6 { padding: 16px !important; }
+  .p-7, .p-8 { padding: 16px !important; }
+  .sm\:p-8 { padding: 16px !important; }
+
+  /* 그리드 갭 */
+  .gap-6 { gap: 12px !important; }
+
+  /* 헤더 타이틀 모바일 크기 */
+  .text-3xl { font-size: 1.5rem !important; }
+  .text-4xl { font-size: 1.75rem !important; }
 }

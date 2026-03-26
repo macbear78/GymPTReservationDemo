@@ -42,7 +42,7 @@ onUnmounted(() => {
     aria-label="포트폴리오 데모 안내"
   >
     <p class="portfolio-demo-banner__text">
-      🎯 포트폴리오 데모 사이트입니다 — 제작 문의는 숨고 프로필을 확인해 주세요
+      🎯 포트폴리오 데모 사이트입니다
     </p>
     <button
       type="button"

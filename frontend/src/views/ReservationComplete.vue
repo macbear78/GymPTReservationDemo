@@ -7,42 +7,46 @@
             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
           </svg>
         </div>
-        <h1 class="text-2xl font-bold">Reservation confirmed</h1>
-        <p class="text-primary-100 mt-1">Your PT session has been booked.</p>
+        <h1 class="text-2xl font-bold">예약이 완료되었습니다</h1>
+        <p class="text-primary-100 mt-1">PT 세션이 예약되었습니다.</p>
       </div>
       <div class="p-6 space-y-4">
         <template v-if="reservation">
           <div class="grid grid-cols-2 gap-3 text-sm">
-            <span class="text-slate-500">Name</span>
+            <span class="text-slate-500">예약자</span>
             <span class="font-medium">{{ reservation.name }}</span>
-            <span class="text-slate-500">Phone</span>
+            <span class="text-slate-500">연락처</span>
             <span class="font-medium">{{ reservation.phone }}</span>
-            <span class="text-slate-500">Trainer</span>
-            <span class="font-medium">{{ reservation.trainer }}</span>
-            <span class="text-slate-500">Date</span>
-            <span class="font-medium">{{ reservation.date }}</span>
-            <span class="text-slate-500">Time</span>
+            <template v-if="reservation.program">
+              <span class="text-slate-500">프로그램</span>
+              <span class="font-medium">{{ reservation.program }}</span>
+            </template>
+            <template v-if="reservation.trainer">
+              <span class="text-slate-500">트레이너</span>
+              <span class="font-medium">{{ reservation.trainer }}</span>
+            </template>
+            <span class="text-slate-500">날짜</span>
+            <span class="font-medium">{{ formatDate(reservation.date) }}</span>
+            <span class="text-slate-500">시간</span>
             <span class="font-medium">{{ reservation.time }}</span>
-            <span class="text-slate-500">PT type</span>
-            <span class="font-medium">{{ reservation.pt_type }}</span>
-            <span class="text-slate-500">Status</span>
-            <span class="font-medium">{{ reservation.status }}</span>
+            <span class="text-slate-500">상태</span>
+            <span class="font-medium">{{ statusLabel(reservation.status) }}</span>
           </div>
         </template>
-        <p v-else class="text-slate-500">No reservation data. <router-link to="/reserve" class="text-primary-600 hover:underline">Book a session</router-link>.</p>
+        <p v-else class="text-slate-500">예약 정보가 없습니다. <router-link to="/reserve" class="text-primary-600 hover:underline">예약하기</router-link></p>
       </div>
       <div class="px-6 pb-6 flex gap-3">
         <router-link
-          to="/reserve"
+          to="/dashboard"
           class="flex-1 py-3 rounded-xl font-medium text-center border border-slate-300 text-slate-700 hover:bg-slate-50 transition"
         >
-          Book another
+          내 PT · 예약 확인
         </router-link>
         <router-link
           to="/"
           class="flex-1 py-3 rounded-xl font-medium text-center bg-primary-500 text-white hover:bg-primary-600 transition"
         >
-          Back to home
+          홈으로
         </router-link>
       </div>
     </div>
@@ -53,4 +57,15 @@
 import { computed } from 'vue';
 
 const reservation = computed(() => history.state?.reservation ?? null);
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${y}년 ${m}월 ${d}일`;
+}
+
+function statusLabel(status) {
+  const map = { PENDING: '예약 대기', CONFIRMED: '확정', CANCELLED: '취소됨', COMPLETED: '완료' };
+  return map[status] || status || '';
+}
 </script>

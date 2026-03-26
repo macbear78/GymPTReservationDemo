@@ -20,66 +20,102 @@
         </h2>
       </div>
 
-      <!-- 오른쪽: 총 인원 카운터 -->
-      <div class="trainers__count" aria-hidden="true">
-        <span class="trainers__count-num">0{{ items.length }}</span>
-        <span class="trainers__count-label">TRAINERS</span>
+      <!-- 오른쪽: 총 인원 카운터 + 네비 -->
+      <div class="trainers__header-right">
+        <div class="trainers__count" aria-hidden="true">
+          <span class="trainers__count-num">{{ String(items.length).padStart(2, '0') }}</span>
+          <span class="trainers__count-label">TRAINERS</span>
+        </div>
+        <div class="trainers__nav" v-if="items.length > visibleCount">
+          <button
+            type="button"
+            class="trainers__nav-btn"
+            :disabled="currentIndex <= 0"
+            aria-label="이전"
+            @click="prev"
+          >
+            <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="trainers__nav-count">
+            {{ String(currentIndex + 1).padStart(2, '0') }}
+            <span class="trainers__nav-sep">/</span>
+            {{ String(maxIndex + 1).padStart(2, '0') }}
+          </span>
+          <button
+            type="button"
+            class="trainers__nav-btn"
+            :disabled="currentIndex >= maxIndex"
+            aria-label="다음"
+            @click="next"
+          >
+            <svg viewBox="0 0 20 20" fill="none"><path d="M8 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 카드 행 -->
-    <ul class="trainers__list" role="list">
-      <li
-        v-for="(trainer, index) in items"
-        :key="trainer.id"
-        v-scroll-animate
-        data-animate="fade-up"
-        :data-delay="String(index * 120)"
-        class="trainers__item"
+    <!-- 슬라이더 뷰포트 -->
+    <div
+      ref="viewportRef"
+      class="trainers__viewport"
+      @mouseenter="pauseAuto"
+      @mouseleave="resumeAuto"
+    >
+      <ul
+        class="trainers__track"
+        :style="trackStyle"
+        role="list"
       >
-        <!-- 번호 뱃지 -->
-        <span class="trainers__item-num" aria-hidden="true">
-          {{ String(index + 1).padStart(2, '0') }}
-        </span>
+        <li
+          v-for="(trainer, index) in items"
+          :key="trainer.id"
+          class="trainers__item"
+          :style="{ width: `${cardWidth}px` }"
+        >
+          <span class="trainers__item-num" aria-hidden="true">
+            {{ String(index + 1).padStart(2, '0') }}
+          </span>
 
-        <!-- 이미지 -->
-        <div class="trainers__img-wrap">
-          <img
-            :src="trainer.image"
-            :alt="trainer.name"
-            class="trainers__img"
-            loading="lazy"
-          />
-          <!-- 호버 오버레이 -->
-          <div class="trainers__overlay" aria-hidden="true">
-            <button
-              type="button"
-              class="trainers__detail-btn"
-              :aria-label="`${trainer.name} 상세 보기`"
-              @click="emit('select-trainer', trainer)"
-            >
-              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </button>
+          <div class="trainers__img-wrap">
+            <img
+              :src="trainer.image"
+              :alt="trainer.name"
+              class="trainers__img"
+              loading="lazy"
+            />
+            <div class="trainers__overlay" aria-hidden="true">
+              <button
+                type="button"
+                class="trainers__detail-btn"
+                :aria-label="`${trainer.name} 상세 보기`"
+                @click="emit('select-trainer', trainer)"
+              >
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <span class="trainers__tag">{{ trainer.role }}</span>
           </div>
-          <!-- 포지션 태그 -->
-          <span class="trainers__tag">{{ trainer.role }}</span>
-        </div>
 
-        <!-- 텍스트 -->
-        <div class="trainers__info">
-          <h3 class="trainers__name">{{ trainer.name }}</h3>
-          <div class="trainers__meta">
-            <span
-              v-for="spec in trainer.specs"
-              :key="spec"
-              class="trainers__spec"
-            >{{ spec }}</span>
+          <div class="trainers__info">
+            <h3 class="trainers__name">{{ trainer.name }}</h3>
+            <div class="trainers__meta">
+              <span
+                v-for="spec in trainer.specs"
+                :key="spec"
+                class="trainers__spec"
+              >{{ spec }}</span>
+            </div>
           </div>
-        </div>
-      </li>
-    </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 프로그레스 바 -->
+    <div class="trainers__progress" v-if="items.length > visibleCount" aria-hidden="true">
+      <div class="trainers__progress-bar" :style="{ width: `${progressPct}%` }"></div>
+    </div>
 
     <!-- 하단 장식 바 -->
     <div class="trainers__footer" aria-hidden="true">
@@ -95,7 +131,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+
+const GAP = 20
+const VISIBLE_DESKTOP = 3
+const AUTO_INTERVAL = 3500
 
 const FALLBACKS = [
   'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=85',
@@ -122,10 +162,100 @@ const items = computed(() => {
     image: t.image?.trim() || FALLBACKS[i % FALLBACKS.length],
   }))
 })
+
+const viewportRef = ref(null)
+const viewportWidth = ref(900)
+const currentIndex = ref(0)
+
+const visibleCount = computed(() => {
+  if (viewportWidth.value < 600) return 1
+  if (viewportWidth.value < 900) return 2
+  return VISIBLE_DESKTOP
+})
+
+const cardWidth = computed(() => {
+  const totalGap = GAP * (visibleCount.value - 1)
+  return (viewportWidth.value - totalGap) / visibleCount.value
+})
+
+const maxIndex = computed(() => Math.max(0, items.value.length - visibleCount.value))
+
+const trackStyle = computed(() => {
+  const offset = currentIndex.value * (cardWidth.value + GAP)
+  return {
+    transform: `translateX(-${offset}px)`,
+    gap: `${GAP}px`,
+    transition: 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  }
+})
+
+const progressPct = computed(() => {
+  if (maxIndex.value === 0) return 100
+  return ((currentIndex.value) / maxIndex.value) * 100
+})
+
+function prev() {
+  if (currentIndex.value > 0) currentIndex.value--
+  restartAuto()
+}
+
+function next() {
+  if (currentIndex.value < maxIndex.value) currentIndex.value++
+  else currentIndex.value = 0
+  restartAuto()
+}
+
+let autoTimer = null
+let paused = false
+
+function startAuto() {
+  stopAuto()
+  if (maxIndex.value <= 0) return
+  autoTimer = setInterval(() => {
+    if (!paused) {
+      if (currentIndex.value < maxIndex.value) currentIndex.value++
+      else currentIndex.value = 0
+    }
+  }, AUTO_INTERVAL)
+}
+
+function stopAuto() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null }
+}
+
+function restartAuto() {
+  startAuto()
+}
+
+function pauseAuto() { paused = true }
+function resumeAuto() { paused = false }
+
+function measure() {
+  if (viewportRef.value) {
+    viewportWidth.value = viewportRef.value.clientWidth
+  }
+}
+
+let ro = null
+
+onMounted(() => {
+  measure()
+  ro = new ResizeObserver(measure)
+  if (viewportRef.value) ro.observe(viewportRef.value)
+  startAuto()
+})
+
+onUnmounted(() => {
+  stopAuto()
+  if (ro) ro.disconnect()
+})
+
+watch(maxIndex, (m) => {
+  if (currentIndex.value > m) currentIndex.value = m
+})
 </script>
 
 <style scoped>
-/* ─── 토큰 ────────────────────────────────── */
 .trainers {
   --bg: #0e0e0c;
   --surface: #181816;
@@ -154,6 +284,13 @@ const items = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+.trainers__header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  flex-shrink: 0;
 }
 .trainers__eyebrow {
   display: flex;
@@ -189,7 +326,6 @@ const items = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  flex-shrink: 0;
 }
 .trainers__count-num {
   font-size: clamp(3rem, 7vw, 6.5rem);
@@ -206,35 +342,86 @@ const items = computed(() => {
   text-transform: uppercase;
 }
 
-/* ─── 카드 리스트 ────────────────────────── */
-.trainers__list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* 네비 */
+.trainers__nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.trainers__nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.trainers__nav-btn:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--accent);
+}
+.trainers__nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.trainers__nav-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.trainers__nav-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  min-width: 50px;
+  text-align: center;
+}
+.trainers__nav-sep {
+  color: var(--muted);
+  margin: 0 2px;
+}
+
+/* ─── 슬라이더 ─────────────────────────────── */
+.trainers__viewport {
+  overflow: hidden;
+  padding: 40px 60px 0;
+}
+
+.trainers__track {
+  display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
 }
+
 .trainers__item {
   position: relative;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--border);
-  padding: 40px 36px 0;
+  flex-shrink: 0;
   cursor: pointer;
-  transition: background 0.3s;
 }
-.trainers__item:last-child { border-right: none; }
-.trainers__item:hover { background: var(--surface); }
+.trainers__item:hover .trainers__img {
+  transform: scale(1.04);
+}
+.trainers__item:hover .trainers__overlay {
+  opacity: 1;
+}
 
-/* 번호 */
 .trainers__item-num {
   position: absolute;
-  top: 28px;
-  right: 28px;
+  top: 8px;
+  right: 8px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--muted);
+  z-index: 2;
 }
 
 /* 이미지 래퍼 */
@@ -254,9 +441,6 @@ const items = computed(() => {
   display: block;
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-.trainers__item:hover .trainers__img {
-  transform: scale(1.04);
-}
 
 /* 호버 오버레이 */
 .trainers__overlay {
@@ -269,7 +453,6 @@ const items = computed(() => {
   opacity: 0;
   transition: opacity 0.3s;
 }
-.trainers__item:hover .trainers__overlay { opacity: 1; }
 .trainers__detail-btn {
   width: 52px;
   height: 52px;
@@ -335,7 +518,19 @@ const items = computed(() => {
   border: 1px solid rgba(212, 242, 74, 0.2);
 }
 
-/* ─── 하단 장식 바 ───────────────────────── */
+/* ─── 프로그레스 바 ─────────────────────────── */
+.trainers__progress {
+  height: 2px;
+  background: var(--border);
+  margin: 0 60px;
+}
+.trainers__progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+
+/* ─── 하단 장식 바 ───────────────────────────── */
 .trainers__footer {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -350,9 +545,8 @@ const items = computed(() => {
 /* ─── 반응형 ─────────────────────────────── */
 @media (max-width: 900px) {
   .trainers__header { padding: 0 32px 36px; }
-  .trainers__list { grid-template-columns: repeat(2, 1fr); }
-  .trainers__item:nth-child(2) { border-right: none; }
-  .trainers__item { padding: 32px 24px 0; }
+  .trainers__viewport { padding: 32px 32px 0; }
+  .trainers__progress { margin: 0 32px; }
 }
 @media (max-width: 600px) {
   .trainers__header {
@@ -360,8 +554,12 @@ const items = computed(() => {
     align-items: flex-start;
     padding: 0 20px 28px;
   }
-  .trainers__list { grid-template-columns: 1fr; }
-  .trainers__item { border-right: none; border-bottom: 1px solid var(--border); padding: 28px 20px 0; }
-  .trainers__item:last-child { border-bottom: none; }
+  .trainers__header-right {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 20px;
+  }
+  .trainers__viewport { padding: 24px 20px 0; }
+  .trainers__progress { margin: 0 20px; }
 }
 </style>

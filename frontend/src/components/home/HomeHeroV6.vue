@@ -42,9 +42,20 @@
       <div class="hero-v6__program-meta">
         <p class="hero-v6__program-name">{{ featuredProgram.title }}</p>
         <p class="hero-v6__program-desc">{{ featuredProgram.desc }}</p>
-        <router-link to="/passes" class="hero-v6__program-link">지금 예약하기 →</router-link>
+        <router-link to="/trainers?specialty=diet" class="hero-v6__program-link">트레이너 선택하기 →</router-link>
       </div>
     </div>
+
+    <button
+      type="button"
+      class="hero-v6__cta"
+      v-scroll-animate
+      data-animate="fade-up"
+      data-delay="300"
+      @click="emit('inquiry')"
+    >
+      무료 상담 문의
+    </button>
 
     <div class="hero-v6__footer">
       <p
@@ -64,7 +75,7 @@
           class="hero-v6__dot-btn"
           @click="activeSlide = i - 1; restartHeroAuto()"
         >
-          <span v-if="activeSlide === i - 1" :key="heroProgressKey" class="indicator-dot active" />
+          <span v-if="activeSlide === i - 1" :key="`dot-${activeSlide}-${heroProgressKey}`" class="indicator-dot active" />
           <span v-else class="indicator-dot" />
         </button>
       </div>
@@ -81,15 +92,24 @@ const props = defineProps({
   featuredProgram: { type: Object, default: null },
 });
 
+const emit = defineEmits(['inquiry']);
+
 const slideCount = computed(() => Math.max(1, props.heroSlides?.length || 0));
 
 const activeSlide = ref(0);
 const heroProgressKey = ref(0);
 
+let prevSlidesSig = '';
 watch(
   () => props.heroSlides,
-  () => {
-    activeSlide.value = 0;
+  (slides) => {
+    const sig = (slides || []).join(',');
+    if (sig !== prevSlidesSig) {
+      prevSlidesSig = sig;
+      activeSlide.value = 0;
+      heroProgressKey.value += 1;
+      restartHeroAuto();
+    }
   },
   { deep: true }
 );
@@ -135,6 +155,9 @@ onUnmounted(() => {
   height: 90vh;
   overflow: hidden;
   font-family: 'Pretendard', -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-v6__bg {
@@ -221,6 +244,29 @@ onUnmounted(() => {
   font-size: 0.75rem;
   text-decoration: underline;
   color: rgba(17, 24, 39, 0.9);
+}
+
+.hero-v6__cta {
+  position: relative;
+  z-index: 10;
+  padding: 16px 48px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.hero-v6__cta:hover {
+  background: #fff;
+  color: #09090b;
+  border-color: #fff;
 }
 
 .hero-v6__footer {

@@ -23,9 +23,20 @@ const activeMenuKey = ref(null);
 const mobileOpen = ref(false);
 const mobileExpandedKey = ref(null);
 const isScrolled = ref(false);
+const headerHidden = ref(false);
+let lastScrollY = 0;
 
 function onScroll() {
-  isScrolled.value = window.scrollY > 20;
+  const y = window.scrollY;
+  isScrolled.value = y > 20;
+
+  if (y > lastScrollY && y > 80) {
+    headerHidden.value = true;
+    closeMenu();
+  } else {
+    headerHidden.value = false;
+  }
+  lastScrollY = y;
 }
 
 function openMenu(key) {
@@ -92,7 +103,7 @@ onUnmounted(() => {
 <template>
   <header
     class="header"
-    :class="{ 'header--scrolled': isScrolled }"
+    :class="{ 'header--scrolled': isScrolled, 'header--hidden': headerHidden }"
     :style="{ top: `${topOffset}px` }"
     @mouseleave="closeMenu"
   >
@@ -447,12 +458,17 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.35s ease;
 }
 
 .header--scrolled {
   background: var(--brand-dark);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.header--hidden {
+  transform: translateY(-100%);
+  pointer-events: none;
 }
 
 .header__bar {
@@ -566,10 +582,11 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   height: 72px;
-  padding: 0 16px;
+  padding: 0 20px;
   color: rgba(255, 255, 255, 0.86);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -584,8 +601,12 @@ onUnmounted(() => {
   color: #fff !important;
 }
 
+.header__nav-link.header__nav-link--white:hover {
+  color: var(--brand-primary) !important;
+}
+
 .header__nav-link--sub {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .header__nav-item--mega {
@@ -602,13 +623,13 @@ onUnmounted(() => {
 .header__nav-action-btn {
   display: inline-flex;
   align-items: center;
-  height: 36px;
-  padding: 0 16px;
+  height: 38px;
+  padding: 0 18px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.88);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;

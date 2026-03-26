@@ -6,63 +6,63 @@
     </div>
   <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
     <header class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">예약 관리</h1>
-      <p class="mt-1 text-slate-600 text-sm sm:text-base">PT 예약을 조회하고 상태를 관리하세요.</p>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">예약 관리</h1>
+      <p class="mt-1 text-slate-300 text-sm sm:text-base">PT 예약을 조회하고 상태를 관리하세요.</p>
     </header>
 
     <!-- 통계 카드 -->
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
-      <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
-        <p class="text-slate-500 text-sm font-medium">오늘 예약</p>
-        <p class="mt-1 text-2xl sm:text-3xl font-bold text-slate-800">{{ stats.today }}</p>
+      <div class="rounded-xl border border-white/10 bg-[#141414] p-4 sm:p-5">
+        <p class="text-slate-400 text-sm font-medium">오늘 예약</p>
+        <p class="mt-1 text-2xl sm:text-3xl font-bold text-white">{{ stats.today }}</p>
       </div>
-      <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
-        <p class="text-slate-500 text-sm font-medium">이번 주 예약</p>
-        <p class="mt-1 text-2xl sm:text-3xl font-bold text-slate-800">{{ stats.week }}</p>
+      <div class="rounded-xl border border-white/10 bg-[#141414] p-4 sm:p-5">
+        <p class="text-slate-400 text-sm font-medium">이번 주 예약</p>
+        <p class="mt-1 text-2xl sm:text-3xl font-bold text-white">{{ stats.week }}</p>
       </div>
-      <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
-        <p class="text-slate-500 text-sm font-medium">총 예약</p>
-        <p class="mt-1 text-2xl sm:text-3xl font-bold text-slate-800">{{ stats.total }}</p>
+      <div class="rounded-xl border border-white/10 bg-[#141414] p-4 sm:p-5">
+        <p class="text-slate-400 text-sm font-medium">총 예약</p>
+        <p class="mt-1 text-2xl sm:text-3xl font-bold text-white">{{ stats.total }}</p>
       </div>
-      <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-4 sm:p-5 shadow-sm">
-        <p class="text-yellow-700 text-sm font-medium">승인 대기</p>
+      <div class="rounded-xl border border-amber-700/40 bg-amber-950/30 p-4 sm:p-5">
+        <p class="text-amber-400 text-sm font-medium">승인 대기</p>
         <p class="mt-1 text-2xl sm:text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
       </div>
-      <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
-        <p class="text-slate-500 text-sm font-medium">취소 예약</p>
+      <div class="rounded-xl border border-white/10 bg-[#141414] p-4 sm:p-5">
+        <p class="text-slate-400 text-sm font-medium">취소 예약</p>
         <p class="mt-1 text-2xl sm:text-3xl font-bold text-red-600">{{ stats.cancelled }}</p>
       </div>
     </div>
 
     <!-- 필터 & 검색 -->
-    <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm mb-6">
+    <div class="rounded-xl border border-white/10 bg-[#141414] p-4 sm:p-6 mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
         <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">이름 검색</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">이름 검색</label>
             <input
               v-model="searchName"
               type="text"
               placeholder="이름"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-slate-800 placeholder-slate-400"
+              class="w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-400"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">전화번호 검색</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">전화번호 검색</label>
             <input
               :value="searchPhone"
               type="tel"
               placeholder="010-0000-0000"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-slate-800 placeholder-slate-400"
+              class="w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-400"
               @input="searchPhone = formatKoreanPhoneAsYouType($event.target.value)"
             />
           </div>
         </div>
         <div v-if="trainerNames.length > 1">
-          <label class="block text-sm font-medium text-slate-700 mb-1">트레이너</label>
+          <label class="block text-sm font-medium text-slate-300 mb-1">트레이너</label>
           <select
             v-model="filterTrainer"
-            class="w-full sm:w-40 px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-slate-800"
+            class="w-full sm:w-40 px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
           >
             <option value="">전체</option>
             <option v-for="t in trainerNames" :key="t" :value="t">{{ t }}</option>
@@ -73,9 +73,9 @@
             id="showCancelled"
             v-model="showCancelled"
             type="checkbox"
-            class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+            class="w-4 h-4 rounded border-white/10 text-primary-600 focus:ring-primary-500 cursor-pointer"
           />
-          <label for="showCancelled" class="text-sm font-medium text-slate-600 cursor-pointer select-none whitespace-nowrap">
+          <label for="showCancelled" class="text-sm font-medium text-slate-300 cursor-pointer select-none whitespace-nowrap">
             취소 예약 포함
           </label>
         </div>
@@ -83,8 +83,8 @@
     </div>
 
     <!-- 테이블 카드 -->
-    <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div v-if="loading" class="p-12 text-center text-slate-500">불러오는 중…</div>
+    <div class="rounded-xl border border-white/10 bg-[#141414] overflow-hidden">
+      <div v-if="loading" class="p-12 text-center text-slate-400">불러오는 중…</div>
       <div v-else-if="error" class="p-6 text-red-600">{{ error }}</div>
       <AdminReservationsTable
         v-else
@@ -98,9 +98,9 @@
     <!-- 빈 상태 (데이터가 전혀 없을 때만) -->
     <div
       v-if="!loading && !error && reservations.length === 0"
-      class="rounded-xl border border-slate-200 bg-slate-50/50 p-12 text-center"
+      class="rounded-xl border border-white/10 bg-white/5 p-12 text-center"
     >
-      <p class="text-slate-500 text-lg font-medium">예약이 없습니다</p>
+      <p class="text-slate-400 text-lg font-medium">예약이 없습니다</p>
       <p class="mt-2 text-slate-400 text-sm">새 예약이 들어오면 여기에 표시됩니다.</p>
     </div>
   </div>
@@ -281,10 +281,10 @@ onMounted(load);
   align-items: center;
   justify-content: center;
   padding: 8px 40px 8px 8px;
-  background: rgba(15, 23, 42, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   font-size: 12px;
-  color: #64748b;
+  color: #9ca3af;
   text-align: center;
 }
 

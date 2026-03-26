@@ -19,7 +19,7 @@
           <h2 class="font-bold text-slate-800 text-lg sm:text-xl">{{ selectedTrainer.name }}</h2>
           <p class="text-primary-600 font-medium text-sm sm:text-base">{{ selectedTrainer.specialty }}</p>
           <p class="text-slate-600 font-semibold mt-1">
-            시간당 {{ formatPrice(selectedTrainer.pricePerHour ?? 0) }}
+            세션당 {{ formatPrice(selectedTrainer.pricePerHour ?? 0) }}
           </p>
         </div>
       </div>

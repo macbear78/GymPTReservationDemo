@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #0a0a0a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .hero {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: 420px;
+    background: linear-gradient(120deg, #0d0a06 0%, #1a1208 40%, #0d0a06 100%);
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  /* Bokeh lights background */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 180px 180px at 15% 30%, rgba(255,160,20,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 120px 120px at 8% 20%, rgba(255,200,60,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 200px 300px at 75% 60%, rgba(180,120,10,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 80px 80px at 55% 15%, rgba(255,180,30,0.12) 0%, transparent 60%);
+  }
+
+  /* Diagonal energy slash */
+  .slash {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .slash::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: 200px;
+    width: 3px; height: 600px;
+    background: linear-gradient(180deg, transparent, rgba(230,160,20,0.25), transparent);
+    transform: rotate(-20deg);
+  }
+
+  .slash::after {
+    content: '';
+    position: absolute;
+    top: -40px; left: 230px;
+    width: 1px; height: 600px;
+    background: linear-gradient(180deg, transparent, rgba(230,160,20,0.15), transparent);
+    transform: rotate(-20deg);
+  }
+
+  /* Silhouette figure area */
+  .figure-area {
+    position: absolute;
+    left: 0; top: 0;
+    width: 50%; height: 100%;
+  }
+
+  /* Floor glow */
+  .floor-glow {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 55%;
+    height: 60px;
+    background: radial-gradient(ellipse 300px 40px at 30% 100%, rgba(220,150,20,0.22) 0%, transparent 70%);
+  }
+
+  /* SVG silhouettes */
+  .silhouette-svg {
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    width: 480px;
+    height: 390px;
+  }
+
+  /* Right content area */
+  .content {
+    position: absolute;
+    right: 0; top: 0;
+    width: 54%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 40px 30px 20px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(230,160,20,0.15);
+    border: 1px solid rgba(230,160,20,0.4);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-bottom: 18px;
+    width: fit-content;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: #E6A014;
+    border-radius: 50%;
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  .badge-text {
+    font-size: 11px;
+    color: #E6A014;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+
+  .headline {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+
+  .headline .gold {
+    color: #F5B800;
+    -webkit-text-stroke: 0.5px #c88c00;
+  }
+
+  .headline .outline {
+    color: transparent;
+    -webkit-text-stroke: 2px #fff;
+  }
+
+  .sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    font-weight: 400;
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #F5B800 0%, #D4860A 100%);
+    color: #0d0a06;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 13px 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(245,184,0,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(245,184,0,0.5);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: #fff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .btn-secondary:hover {
+    border-color: #F5B800;
+    background: rgba(245,184,0,0.08);
+  }
+
+  /* Stats row */
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .stat-item { display: flex; flex-direction: column; gap: 2px; }
+  .stat-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: #F5B800;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    font-weight: 400;
+  }
+  .stat-divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255,255,255,0.1);
+    align-self: center;
+  }
+
+  /* Corner deco */
+  .corner-tl, .corner-br {
+    position: absolute;
+    width: 28px; height: 28px;
+  }
+  .corner-tl { top: 16px; left: 16px; border-top: 2px solid rgba(245,184,0,0.5); border-left: 2px solid rgba(245,184,0,0.5); }
+  .corner-br { bottom: 16px; right: 16px; border-bottom: 2px solid rgba(245,184,0,0.5); border-right: 2px solid rgba(245,184,0,0.5); }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="slash"></div>
+  <div class="floor-glow"></div>
+
+  <!-- Silhouette figures (SVG) -->
+  <svg class="silhouette-svg" viewBox="0 0 480 390" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="spotlight" cx="35%" cy="10%" r="60%">
+        <stop offset="0%" stop-color="rgba(255,200,60,0.18)"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </radialGradient>
+      <linearGradient id="figGrad1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2a2010"/>
+        <stop offset="100%" stop-color="#0d0a06"/>
+      </linearGradient>
+      <linearGradient id="figGrad2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1e1608"/>
+        <stop offset="100%" stop-color="#0a0806"/>
+      </linearGradient>
+      <linearGradient id="rimLeft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="rgba(245,184,0,0.6)"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </linearGradient>
+      <linearGradient id="rimLeft2" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="rgba(245,184,0,0.35)"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <!-- Spotlight -->
+    <ellipse cx="160" cy="0" rx="200" ry="160" fill="url(#spotlight)" opacity="0.8"/>
+
+    <!-- ===== FIGURE 1: Female (left, slightly front) ===== -->
+    <!-- Shadow on floor -->
+    <ellipse cx="145" cy="385" rx="70" ry="10" fill="#000" opacity="0.5"/>
+
+    <!-- Shoes -->
+    <ellipse cx="120" cy="380" rx="22" ry="7" fill="#111"/>
+    <ellipse cx="158" cy="382" rx="20" ry="6" fill="#111"/>
+
+    <!-- Legs -->
+    <path d="M118 310 Q110 350 118 380" stroke="url(#figGrad1)" stroke-width="26" fill="none" stroke-linecap="round"/>
+    <path d="M155 310 Q162 348 158 382" stroke="url(#figGrad1)" stroke-width="22" fill="none" stroke-linecap="round"/>
+
+    <!-- Leggings rim light (left edge) -->
+    <path d="M105 310 Q97 348 106 380" stroke="url(#rimLeft)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Torso / core - athletic crop top style -->
+    <path d="M108 210 Q100 260 105 310 L165 310 Q168 260 158 210 Z" fill="url(#figGrad1)"/>
+    <!-- Core definition -->
+    <path d="M135 250 Q133 265 135 280" stroke="rgba(255,180,40,0.15)" stroke-width="2" fill="none"/>
+
+    <!-- Sports bra / top -->
+    <path d="M106 210 Q110 196 136 190 Q162 196 166 210 L158 218 Q136 208 114 218 Z" fill="#151010"/>
+    <!-- Rim light on left shoulder -->
+    <path d="M106 210 Q102 198 115 192" stroke="rgba(245,184,0,0.5)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- LEFT ARM with dumbbell -->
+    <!-- Upper arm -->
+    <path d="M108 215 Q82 240 72 270" stroke="url(#figGrad1)" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <!-- Rim on upper arm -->
+    <path d="M100 215 Q74 240 64 268" stroke="url(#rimLeft)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+    <!-- Forearm bent upward -->
+    <path d="M72 270 Q68 250 80 230" stroke="url(#figGrad1)" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <!-- Rim on forearm -->
+    <path d="M64 268 Q60 248 72 228" stroke="url(#rimLeft)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Dumbbell -->
+    <rect x="52" y="218" width="52" height="12" rx="6" fill="#1a1a1a" stroke="rgba(245,184,0,0.5)" stroke-width="1"/>
+    <rect x="44" y="213" width="14" height="22" rx="4" fill="#222" stroke="rgba(245,184,0,0.6)" stroke-width="1.2"/>
+    <rect x="46" y="215" width="10" height="18" rx="3" fill="#111"/>
+    <rect x="98" y="213" width="14" height="22" rx="4" fill="#222" stroke="rgba(245,184,0,0.3)" stroke-width="1"/>
+    <!-- Dumbbell glow -->
+    <ellipse cx="51" cy="224" rx="8" ry="5" fill="rgba(245,184,0,0.12)" filter="url(#glow)"/>
+
+    <!-- RIGHT ARM (down, at side) -->
+    <path d="M162 215 Q178 250 172 285" stroke="url(#figGrad2)" stroke-width="20" fill="none" stroke-linecap="round"/>
+
+    <!-- Neck + Head -->
+    <rect x="128" y="175" width="20" height="22" rx="8" fill="url(#figGrad1)"/>
+    <!-- Head (oval) -->
+    <ellipse cx="138" cy="150" rx="30" ry="36" fill="url(#figGrad1)"/>
+    <!-- Hair (ponytail) -->
+    <path d="M138 118 Q170 110 185 130 Q175 120 138 118 Z" fill="#0d0a06"/>
+    <path d="M168 122 Q190 135 186 160 Q178 140 168 122 Z" fill="#0d0a06"/>
+    <!-- Face light highlight -->
+    <ellipse cx="132" cy="148" rx="14" ry="18" fill="rgba(255,190,80,0.06)"/>
+    <!-- Rim on head left -->
+    <path d="M110 148 Q112 126 132 118" stroke="rgba(245,184,0,0.3)" stroke-width="2" fill="none"/>
+
+    <!-- ===== FIGURE 2: Male trainer (right, slightly behind) ===== -->
+    <!-- Shadow on floor -->
+    <ellipse cx="290" cy="388" rx="65" ry="8" fill="#000" opacity="0.4"/>
+
+    <!-- Shoes -->
+    <ellipse cx="265" cy="384" rx="22" ry="6" fill="#0e0e0e"/>
+    <ellipse cx="310" cy="386" rx="20" ry="6" fill="#0e0e0e"/>
+
+    <!-- Legs -->
+    <path d="M258 318 Q250 352 263 384" stroke="url(#figGrad2)" stroke-width="30" fill="none" stroke-linecap="round"/>
+    <path d="M300 318 Q308 352 310 386" stroke="url(#figGrad2)" stroke-width="26" fill="none" stroke-linecap="round"/>
+
+    <!-- Torso (t-shirt, broader) -->
+    <path d="M240 210 Q232 265 238 320 L322 320 Q328 265 318 210 Z" fill="url(#figGrad2)"/>
+    <!-- T-shirt texture line -->
+    <path d="M280 230 L280 290" stroke="rgba(255,255,255,0.04)" stroke-width="1" fill="none"/>
+
+    <!-- T-shirt collar -->
+    <path d="M255 210 Q280 200 305 210 L300 222 Q280 212 260 222 Z" fill="#0e0e0e"/>
+
+    <!-- RIGHT ARM extended (thumbs up / touching shoulder) -->
+    <path d="M318 215 Q345 230 352 258" stroke="url(#figGrad2)" stroke-width="28" fill="none" stroke-linecap="round"/>
+    <path d="M352 258 Q345 275 330 285" stroke="url(#figGrad2)" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <!-- Thumb up hand -->
+    <ellipse cx="330" cy="288" rx="14" ry="12" fill="url(#figGrad2)"/>
+    <rect x="323" y="272" width="10" height="18" rx="5" fill="url(#figGrad2)"/>
+
+    <!-- LEFT ARM -->
+    <path d="M242 215 Q225 245 228 275" stroke="url(#figGrad2)" stroke-width="26" fill="none" stroke-linecap="round"/>
+
+    <!-- Neck + Head (male, larger) -->
+    <rect x="270" y="172" width="22" height="24" rx="8" fill="url(#figGrad2)"/>
+    <!-- Head -->
+    <ellipse cx="281" cy="142" rx="34" ry="38" fill="url(#figGrad2)"/>
+    <!-- Short hair -->
+    <path d="M248 132 Q258 108 281 106 Q304 108 314 132 Q304 112 281 110 Q258 112 248 132 Z" fill="#0d0a06"/>
+    <!-- Stubble / beard hint -->
+    <ellipse cx="281" cy="162" rx="20" ry="10" fill="rgba(0,0,0,0.25)"/>
+    <!-- Face glow (light hitting from left) -->
+    <ellipse cx="272" cy="140" rx="16" ry="20" fill="rgba(255,190,80,0.05)"/>
+    <!-- Smile (mouth) -->
+    <path d="M270 162 Q281 170 292 162" stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Muscular detail overlay lines (subtle) -->
+    <path d="M242 230 Q235 250 238 270" stroke="rgba(255,180,40,0.06)" stroke-width="1" fill="none"/>
+    <path d="M318 230 Q326 250 322 272" stroke="rgba(255,180,40,0.08)" stroke-width="1" fill="none"/>
+
+    <!-- Gym background lines (equipment silhouettes, very faint) -->
+    <rect x="0" y="200" width="6" height="190" rx="3" fill="rgba(255,160,20,0.06)"/>
+    <rect x="420" y="160" width="6" height="220" rx="3" fill="rgba(255,160,20,0.05)"/>
+    <rect x="430" y="240" width="50" height="6" rx="3" fill="rgba(255,160,20,0.05)"/>
+    <rect x="410" y="300" width="70" height="6" rx="3" fill="rgba(255,160,20,0.04)"/>
+
+    <!-- Bokeh light dots (gym lights) -->
+    <circle cx="60" cy="30" r="14" fill="rgba(255,210,80,0.18)"/>
+    <circle cx="60" cy="30" r="7" fill="rgba(255,220,100,0.3)"/>
+    <circle cx="60" cy="30" r="3" fill="rgba(255,240,160,0.6)"/>
+    <circle cx="20" cy="60" r="8" fill="rgba(255,200,60,0.10)"/>
+    <circle cx="380" cy="50" r="10" fill="rgba(255,200,60,0.08)"/>
+    <circle cx="400" cy="80" r="5" fill="rgba(255,200,60,0.06)"/>
+  </svg>
+
+  <!-- Right content -->
+  <div class="content">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      <span class="badge-text">1:1 PERSONAL TRAINING</span>
+    </div>
+
+    <div class="headline">
+      지금보다 더 <span class="gold">강한,</span><br>
+      더 건강한<br>
+      <span class="gold">당신</span>을 만듭니다!
+    </div>
+
+    <p class="sub">체계적인 맞춤 트레이닝 · 전문 트레이너 관리</p>
+
+    <div class="cta-row">
+      <button class="btn-primary">두로 상담 신청</button>
+      <button class="btn-secondary">1:1 맞춤 PT</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-num">500+</span>
+        <span class="stat-label">회원 관리</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">98%</span>
+        <span class="stat-label">만족도</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">10년+</span>
+        <span class="stat-label">경력 트레이너</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative corners -->
+  <div class="corner-tl"></div>
+  <div class="corner-br"></div>
+</div>
+</body>
+</html>

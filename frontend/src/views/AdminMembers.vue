@@ -1,22 +1,22 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
     <header class="mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">회원 관리</h1>
-      <p class="mt-1 text-slate-500 text-sm">회원 정보를 수정하고 패스 이력을 확인합니다.</p>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">회원 관리</h1>
+      <p class="mt-1 text-slate-400 text-sm">회원 정보를 수정하고 패스 이력을 확인합니다.</p>
     </header>
 
     <!-- 검색 -->
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm mb-4">
+    <div class="rounded-xl border border-white/10 bg-[#141414] p-4 mb-4">
       <div class="flex gap-3">
         <input
           v-model="search"
           type="text"
           placeholder="이름 또는 전화번호 검색"
-          class="flex-1 px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none text-sm"
+          class="flex-1 px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 outline-none text-sm placeholder-slate-400"
         />
         <button
           type="button"
-          class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition"
+          class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium transition"
           @click="loadMembers"
         >
           새로고침
@@ -25,7 +25,7 @@
     </div>
 
     <!-- 회원 목록 -->
-    <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div class="rounded-xl border border-white/10 bg-[#141414] overflow-hidden">
       <div v-if="loading" class="p-12 text-center text-slate-400 text-sm">불러오는 중…</div>
       <div v-else-if="loadError" class="p-12 text-center text-red-500 text-sm">
         {{ loadError }}
@@ -35,21 +35,21 @@
         {{ search ? '검색 결과가 없습니다.' : '등록된 회원이 없습니다.' }}
       </div>
       <table v-else class="w-full text-sm">
-        <thead class="bg-slate-50 border-b border-slate-200">
+        <thead class="bg-white/3 border-b border-white/10">
           <tr>
-            <th class="text-left px-5 py-3 font-medium text-slate-500">이름</th>
-            <th class="text-left px-5 py-3 font-medium text-slate-500">전화번호</th>
-            <th class="text-left px-5 py-3 font-medium text-slate-500 hidden sm:table-cell">가입일</th>
-            <th class="text-right px-5 py-3 font-medium text-slate-500">관리</th>
+            <th class="text-left px-5 py-3 font-medium text-slate-400">이름</th>
+            <th class="text-left px-5 py-3 font-medium text-slate-400">전화번호</th>
+            <th class="text-left px-5 py-3 font-medium text-slate-400 hidden sm:table-cell">가입일</th>
+            <th class="text-right px-5 py-3 font-medium text-slate-400">관리</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody class="divide-y divide-white/5">
           <tr
             v-for="m in filtered"
             :key="m.userId"
-            class="hover:bg-slate-50 transition"
+            class="hover:bg-white/5 transition"
           >
-            <td class="px-5 py-3 font-medium text-slate-800">
+            <td class="px-5 py-3 font-medium text-white">
               <div class="flex items-center gap-2">
                 <div class="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs shrink-0">
                   {{ (m.name || '?').charAt(0) }}
@@ -57,7 +57,7 @@
                 {{ m.name || '—' }}
               </div>
             </td>
-            <td class="px-5 py-3 text-slate-600">{{ formatKoreanPhoneDisplayOrDash(m.phone) }}</td>
+            <td class="px-5 py-3 text-slate-300">{{ formatKoreanPhoneDisplayOrDash(m.phone) }}</td>
             <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">
               {{ m.createdAt ? m.createdAt.slice(0, 10) : '—' }}
             </td>
@@ -80,23 +80,23 @@
       <div v-if="modal.open" class="fixed inset-0 z-[250] flex items-start justify-end">
         <div class="absolute inset-0 bg-black/40" @click="closeModal" />
 
-        <div class="relative w-full max-w-lg h-full bg-white shadow-2xl flex flex-col overflow-hidden">
+        <div class="relative w-full max-w-lg h-full bg-[#141414] shadow-2xl flex flex-col overflow-hidden">
           <!-- 모달 헤더 -->
-          <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 shrink-0">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold text-sm">
                 {{ (modal.member?.name || '?').charAt(0) }}
               </div>
               <div>
-                <p class="font-semibold text-slate-800">{{ modal.member?.name }}</p>
+                <p class="font-semibold text-white">{{ modal.member?.name }}</p>
                 <p class="text-xs text-slate-400">{{ formatKoreanPhoneDisplayOrDash(modal.member?.phone) }}</p>
               </div>
             </div>
-            <button type="button" class="text-slate-400 hover:text-slate-600 text-2xl leading-none" @click="closeModal">×</button>
+            <button type="button" class="text-slate-400 hover:text-slate-300 text-2xl leading-none" @click="closeModal">×</button>
           </div>
 
           <!-- 탭 -->
-          <div class="flex border-b border-slate-200 shrink-0">
+          <div class="flex border-b border-white/10 shrink-0">
             <button
               v-for="tab in ['기본정보', '패스 관리', '수정 이력']"
               :key="tab"
@@ -104,7 +104,7 @@
               class="flex-1 py-3 text-sm font-medium transition border-b-2"
               :class="modal.tab === tab
                 ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'"
+                : 'border-transparent text-slate-400 hover:text-slate-300'"
               @click="modal.tab = tab; onTabChange(tab)"
             >
               {{ tab }}
@@ -117,31 +117,31 @@
             <!-- 기본정보 탭 -->
             <div v-if="modal.tab === '기본정보'" class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">이름</label>
+                <label class="block text-sm font-medium text-slate-300 mb-1">이름</label>
                 <input
                   v-model="editForm.name"
                   type="text"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 outline-none text-sm"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">전화번호</label>
+                <label class="block text-sm font-medium text-slate-300 mb-1">전화번호</label>
                 <input
                   :value="editForm.phone"
                   type="tel"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 outline-none text-sm"
                   @input="editForm.phone = formatKoreanPhoneAsYouType($event.target.value)"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
+                <label class="block text-sm font-medium text-slate-300 mb-1">
                   수정 사유 <span class="text-slate-400 font-normal">(선택)</span>
                 </label>
                 <input
                   v-model="editForm.reason"
                   type="text"
                   placeholder="예: 전화번호 변경 요청"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 outline-none text-sm"
                 />
               </div>
 
@@ -168,9 +168,9 @@
                   :key="pass.passId"
                   class="rounded-xl border p-4 space-y-3"
                   :class="{
-                    'border-emerald-200 bg-emerald-50': pass.status === 'ACTIVE',
-                    'border-slate-200 bg-slate-50': pass.status === 'EXHAUSTED',
-                    'border-red-200 bg-red-50': pass.status === 'EXPIRED',
+                    'border-emerald-700/40 bg-emerald-950/30': pass.status === 'ACTIVE',
+                    'border-white/10 bg-white/5': pass.status === 'EXHAUSTED',
+                    'border-red-800/40 bg-red-950/40': pass.status === 'EXPIRED',
                   }"
                 >
                   <!-- 패스 요약 -->
@@ -179,9 +179,9 @@
                       <span
                         class="text-sm font-bold"
                         :class="{
-                          'text-emerald-700': pass.status === 'ACTIVE',
-                          'text-slate-500': pass.status === 'EXHAUSTED',
-                          'text-red-600': pass.status === 'EXPIRED',
+                          'text-emerald-400': pass.status === 'ACTIVE',
+                          'text-slate-400': pass.status === 'EXHAUSTED',
+                          'text-red-400': pass.status === 'EXPIRED',
                         }"
                       >
                         {{ pass.remainingSessions }} / {{ pass.totalSessions }}회
@@ -206,7 +206,7 @@
                     </button>
                   </div>
 
-                  <div class="text-xs text-slate-500 flex flex-wrap gap-3">
+                  <div class="text-xs text-slate-400 flex flex-wrap gap-3">
                     <span>만료일: {{ pass.expiryDate }}</span>
                     <span v-if="pass.memo">메모: {{ pass.memo }}</span>
                   </div>
@@ -215,21 +215,21 @@
                   <div v-if="passEditing === pass.passId" class="border-t pt-3 space-y-2">
                     <div class="grid grid-cols-2 gap-2">
                       <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">잔여 세션</label>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">잔여 세션</label>
                         <input
                           v-model.number="passEditForms[pass.passId].remainingSessions"
                           type="number"
                           min="0"
                           :max="pass.totalSessions"
-                          class="w-full px-2 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none text-xs"
+                          class="w-full px-2 py-1.5 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 outline-none text-xs"
                         />
                       </div>
                       <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">만료일</label>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">만료일</label>
                         <input
                           v-model="passEditForms[pass.passId].expiryDate"
                           type="date"
-                          class="w-full px-2 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none text-xs"
+                          class="w-full px-2 py-1.5 rounded-lg border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 outline-none text-xs"
                         />
                       </div>
                     </div>
