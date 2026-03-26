@@ -1,9 +1,11 @@
 /** Gym PT — 헤더 메가메뉴 데이터 (1인 트레이너 PT샵 톤) */
 export const navItems = [
-  { key: 'home', label: 'Home', href: '/', hasMega: false },
-  { key: 'trainers', label: '트레이너', href: '/trainers', hasMega: false },
-  { key: 'passes', label: '프로그램·패스', href: '/passes', hasMega: false },
-  { key: 'reserve', label: 'PT 예약', href: '/reserve', hasMega: false },
+  { key: 'home',     label: 'Home',       href: '/',        hasMega: false },
+  { key: 'trainers', label: '트레이너',    href: '/trainers', hasMega: false },
+  { key: 'passes',   label: '프로그램·패스', href: '/passes', hasMega: false },
+  { key: 'reserve',  label: 'PT 예약',    href: '/reserve',  hasMega: false },
+  { key: 'member',   label: '회원',                          hasMega: true  },
+  { key: 'admin',    label: '관리자',                         hasMega: true  },
 ];
 
 export const menuData = {
@@ -89,21 +91,9 @@ export const menuData = {
       },
       {
         id: 'a2',
-        title: '트레이너 등록',
-        description: '추가 트레이너를 등록합니다.',
+        title: '트레이너 관리',
+        description: '트레이너를 등록하고 정보를 수정합니다.',
         readMore: '/admin/trainer',
-      },
-      {
-        id: 'a3',
-        title: '트레이너 수정',
-        description: '등록된 트레이너 정보를 수정합니다.',
-        readMore: '/admin/trainer/edit',
-      },
-      {
-        id: 'a8',
-        title: '업로드 테스트',
-        description: '이미지 업로드를 테스트합니다.',
-        readMore: '/upload-test',
       },
     ],
   },

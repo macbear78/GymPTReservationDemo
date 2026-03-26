@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { navItems } from "../data/menuData.js";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { navItems, menuData } from "../data/menuData.js";
 
 defineProps({
   /** Portfolio demo banner height — header sits below fixed banner */
@@ -12,19 +12,40 @@ import { useMemberAuth }  from "../composables/useMemberAuth.js";
 const { storeName, logoImage, logoText, load: loadStoreInfo } = useStoreInfo();
 const { isLoggedIn, name: memberName, clearSession, checkToken } = useMemberAuth();
 
+const activeMenuKey = ref(null);
 const mobileOpen = ref(false);
+const mobileExpandedKey = ref(null);
 const isScrolled = ref(false);
 
 function onScroll() {
   isScrolled.value = window.scrollY > 20;
 }
 
+function openMenu(key) {
+  activeMenuKey.value = key;
+}
+
+function closeMenu() {
+  activeMenuKey.value = null;
+}
+
+const activeMenu = computed(() => {
+  if (!activeMenuKey.value) return null;
+  return menuData[activeMenuKey.value] || null;
+});
+
 function toggleMobileMenu() {
   mobileOpen.value = !mobileOpen.value;
+  if (!mobileOpen.value) mobileExpandedKey.value = null;
+}
+
+function toggleMobileExpand(key) {
+  mobileExpandedKey.value = mobileExpandedKey.value === key ? null : key;
 }
 
 function closeMobile() {
   mobileOpen.value = false;
+  mobileExpandedKey.value = null;
 }
 
 function onResize() {
@@ -53,6 +74,7 @@ onUnmounted(() => {
     class="header"
     :class="{ 'header--scrolled': isScrolled }"
     :style="{ top: `${topOffset}px` }"
+    @mouseleave="closeMenu"
   >
     <div class="header__bar">
       <div class="header__inner">
@@ -76,13 +98,24 @@ onUnmounted(() => {
             v-for="item in navItems"
             :key="item.key"
             class="header__nav-item"
+            @mouseenter="item.hasMega ? openMenu(item.key) : closeMenu()"
           >
             <router-link
+              v-if="item.href"
               :to="item.href"
               class="header__nav-link"
             >
               {{ item.label }}
             </router-link>
+            <a
+              v-else
+              href="#"
+              class="header__nav-link"
+              :class="{ 'header__nav-link--active': activeMenuKey === item.key }"
+              @click.prevent
+            >
+              {{ item.label }}
+            </a>
           </div>
         </nav>
 
@@ -117,6 +150,42 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <!-- Desktop Mega Menu -->
+    <Transition name="mega-fade">
+      <div v-if="activeMenu" class="header__mega" :aria-hidden="!activeMenu">
+        <div class="header__mega-inner">
+          <div class="header__mega-side">
+            <p class="header__mega-eyebrow">{{ activeMenu.eyebrow }}</p>
+            <h3 class="header__mega-title">{{ activeMenu.title }}</h3>
+            <p class="header__mega-desc">{{ activeMenu.description }}</p>
+            <router-link
+              v-if="activeMenu.overviewLink"
+              :to="activeMenu.overviewLink"
+              class="header__mega-overview"
+              @click="closeMenu"
+            >
+              전체 보기 →
+            </router-link>
+          </div>
+          <div class="header__mega-grid">
+            <router-link
+              v-for="cat in activeMenu.categories"
+              :key="cat.id"
+              :to="cat.readMore"
+              class="header__mega-card"
+              @click="closeMenu"
+            >
+              <div class="header__mega-card-top">
+                <h4 class="header__mega-card-title">{{ cat.title }}</h4>
+                <span class="header__mega-card-arrow">→</span>
+              </div>
+              <p class="header__mega-card-desc">{{ cat.description }}</p>
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Mobile -->
     <Transition name="mobile-panel">
       <div v-if="mobileOpen" class="header__mobile">
@@ -148,15 +217,44 @@ onUnmounted(() => {
           </div>
 
           <nav class="header__mobile-nav" aria-label="모바일 메뉴">
-            <router-link
-              v-for="item in navItems"
-              :key="item.key"
-              :to="item.href"
-              class="header__mobile-link header__mobile-link--top"
-              @click="closeMobile"
-            >
-              <strong>{{ item.label }}</strong>
-            </router-link>
+            <div v-for="item in navItems" :key="item.key" class="header__mobile-item">
+              <!-- 단순 링크 -->
+              <router-link
+                v-if="!item.hasMega && item.href"
+                :to="item.href"
+                class="header__mobile-link header__mobile-link--top"
+                @click="closeMobile"
+              >
+                <strong>{{ item.label }}</strong>
+              </router-link>
+              <!-- 아코디언 (hasMega) -->
+              <template v-else>
+                <button
+                  type="button"
+                  class="header__mobile-trigger"
+                  :aria-expanded="mobileExpandedKey === item.key"
+                  @click="toggleMobileExpand(item.key)"
+                >
+                  <span>{{ item.label }}</span>
+                  <span class="header__mobile-chevron" :class="{ 'is-open': mobileExpandedKey === item.key }">+</span>
+                </button>
+                <Transition name="accordion">
+                  <div v-if="mobileExpandedKey === item.key" class="header__mobile-drop">
+                    <p class="header__mobile-desc">{{ menuData[item.key]?.description }}</p>
+                    <router-link
+                      v-for="cat in menuData[item.key]?.categories || []"
+                      :key="cat.id"
+                      :to="cat.readMore"
+                      class="header__mobile-link"
+                      @click="closeMobile"
+                    >
+                      <strong>{{ cat.title }}</strong>
+                      <span>{{ cat.description }}</span>
+                    </router-link>
+                  </div>
+                </Transition>
+              </template>
+            </div>
           </nav>
 
           <router-link to="/reserve" class="header__mobile-cta" @click="closeMobile">
@@ -491,6 +589,147 @@ onUnmounted(() => {
   background: var(--brand-primary-hover);
   color: #fff;
 }
+
+/* desktop mega */
+.header__mega {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: 0 24px 20px;
+}
+.header__mega-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: rgba(31, 42, 48, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  overflow: hidden;
+}
+.header__mega-side {
+  padding: 32px 28px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+.header__mega-eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.header__mega-title {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.header__mega-desc {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.header__mega-overview {
+  display: inline-block;
+  margin-top: 20px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+.header__mega-overview:hover { color: var(--brand-primary); }
+.header__mega-grid {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.header__mega-card {
+  display: block;
+  padding: 18px;
+  border-radius: 16px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+}
+.header__mega-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(26, 188, 156, 0.45);
+  background: rgba(255, 255, 255, 0.05);
+}
+.header__mega-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.header__mega-card-title {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+}
+.header__mega-card-arrow { color: var(--brand-primary); font-size: 16px; flex-shrink: 0; }
+.header__mega-card-desc {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* mega transition */
+.mega-fade-enter-active,
+.mega-fade-leave-active { transition: opacity 0.22s ease, transform 0.22s ease; }
+.mega-fade-enter-from,
+.mega-fade-leave-to { opacity: 0; transform: translateY(-6px); }
+.mega-fade-leave-active { pointer-events: none; }
+
+/* mobile accordion */
+.header__mobile-item { border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.header__mobile-trigger {
+  width: 100%;
+  padding: 16px 0;
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.header__mobile-chevron {
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+.header__mobile-chevron.is-open { transform: rotate(45deg); }
+.header__mobile-drop {
+  padding: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.header__mobile-desc {
+  margin: 0 0 2px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.accordion-enter-active,
+.accordion-leave-active { transition: all 0.2s ease; overflow: hidden; }
+.accordion-enter-from,
+.accordion-leave-to { opacity: 0; transform: translateY(-4px); }
 
 /* 관리자 아이콘 버튼 */
 .header__admin-btn {
