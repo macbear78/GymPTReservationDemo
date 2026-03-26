@@ -28,6 +28,15 @@
 
           <button
             type="button"
+            class="w-full py-3 rounded-xl font-semibold transition demo-login-btn"
+            :disabled="loading"
+            @click="demoLogin"
+          >
+            🎯 데모 계정으로 바로 로그인
+          </button>
+
+          <button
+            type="button"
             :disabled="!password || loading"
             class="w-full py-3 rounded-xl font-semibold bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50 transition"
             @click="onLogin"
@@ -37,10 +46,9 @@
         </div>
       </div>
 
-      <p class="text-center mt-4 text-xs text-slate-400">
-        기본 비밀번호: <code class="bg-slate-100 px-1.5 py-0.5 rounded">admin1234</code>
-        (환경변수 <code class="bg-slate-100 px-1.5 py-0.5 rounded">ADMIN_PASSWORD</code> 로 변경)
-      </p>
+      <div class="mt-4 p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-sm text-center">
+        💡 데모 비밀번호: admin1234
+      </div>
     </div>
   </div>
 </template>
@@ -59,6 +67,11 @@ const password = ref('');
 const loading = ref(false);
 const error = ref('');
 
+function demoLogin() {
+  password.value = 'admin1234';
+  onLogin();
+}
+
 async function onLogin() {
   if (!password.value) return;
   error.value = '';
@@ -75,3 +88,19 @@ async function onLogin() {
   }
 }
 </script>
+
+<style scoped>
+.demo-login-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.demo-login-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.demo-login-btn:disabled {
+  opacity: 0.5;
+}
+</style>

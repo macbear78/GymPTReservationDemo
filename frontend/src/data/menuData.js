@@ -1,10 +1,11 @@
 /** Gym PT — 헤더 메가메뉴 데이터 (1인 트레이너 PT샵 톤) */
 export const navItems = [
   { key: 'home',     label: 'Home',       href: '/',        hasMega: false },
-  { key: 'trainers', label: '트레이너',    href: '/trainers', hasMega: false },
-  { key: 'passes',   label: '프로그램·패스', href: '/passes', hasMega: false },
-  { key: 'reserve',  label: 'PT 예약',    href: '/reserve',  hasMega: false },
-  { key: 'member',   label: '회원',                          hasMega: true  },
+  { key: 'classes',   label: '강좌',       href: '/trainers', hasMega: false },
+  { key: 'trainers', label: '트레이너',   href: '/trainers', hasMega: false },
+  { key: 'story',    label: '스토리',     href: '/#story',     hasMega: false },
+  { key: 'sns',      label: 'SNS',                              hasMega: true  },
+  { key: 'member',   label: '회원',                            hasMega: true  },
   { key: 'admin',    label: '관리자',                         hasMega: true  },
 ];
 
@@ -94,6 +95,28 @@ export const menuData = {
         title: '트레이너 관리',
         description: '트레이너를 등록하고 정보를 수정합니다.',
         readMore: '/admin/trainer',
+      },
+    ],
+  },
+  sns: {
+    eyebrow: 'SNS',
+    title: '소셜 미디어',
+    description: '인스타그램과 블로그에서 최신 소식을 확인하세요.',
+    overviewLink: null,
+    categories: [
+      {
+        id: 'sns1',
+        title: '인스타그램',
+        description: '트레이닝 일상과 회원 후기를 확인하세요.',
+        readMore: 'https://instagram.com',
+        external: true,
+      },
+      {
+        id: 'sns2',
+        title: '블로그',
+        description: '운동 팁과 건강 정보를 공유합니다.',
+        readMore: 'https://blog.naver.com',
+        external: true,
       },
     ],
   },

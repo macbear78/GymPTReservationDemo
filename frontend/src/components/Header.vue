@@ -12,11 +12,12 @@ import { useAuth }        from "../composables/useAuth.js";
 
 const { storeName, logoImage, logoText, load: loadStoreInfo } = useStoreInfo();
 const { isLoggedIn, name: memberName, clearSession, checkToken } = useMemberAuth();
-const { isLoggedIn: isAdminLoggedIn, checkToken: checkAdminToken, token: adminToken } = useAuth();
+const { isLoggedIn: isAdminLoggedIn, checkToken: checkAdminToken, clearToken: clearAdminToken } = useAuth();
 
-// 토큰 존재 여부로 즉시 잠금 여부 판단 (verified 비동기 대기 불필요)
 const memberLocked = computed(() => !isLoggedIn.value);
-const adminLocked  = computed(() => !adminToken.value);
+const adminLocked  = computed(() => !isAdminLoggedIn.value);
+
+const mainNavItems = computed(() => navItems.filter(i => !i.hasMega || i.key === 'sns'));
 
 const activeMenuKey = ref(null);
 const mobileOpen = ref(false);
@@ -52,6 +53,18 @@ function toggleMobileExpand(key) {
 function closeMobile() {
   mobileOpen.value = false;
   mobileExpandedKey.value = null;
+}
+
+function adminLogout() {
+  clearAdminToken();
+  closeMenu();
+  closeMobile();
+}
+
+function memberLogout() {
+  clearSession();
+  closeMenu();
+  closeMobile();
 }
 
 function onResize() {
@@ -99,10 +112,10 @@ onUnmounted(() => {
           </template>
         </router-link>
 
-        <!-- Desktop nav -->
+        <!-- Desktop nav (일반 링크 + SNS 메가메뉴) -->
         <nav class="header__nav" aria-label="주메뉴">
           <div
-            v-for="item in navItems"
+            v-for="item in mainNavItems"
             :key="item.key"
             class="header__nav-item"
             @mouseenter="item.hasMega ? openMenu(item.key) : closeMenu()"
@@ -111,6 +124,7 @@ onUnmounted(() => {
               v-if="item.href"
               :to="item.href"
               class="header__nav-link"
+              :class="{ 'header__nav-link--white': item.key === 'story' || item.key === 'sns' }"
             >
               {{ item.label }}
             </router-link>
@@ -118,7 +132,10 @@ onUnmounted(() => {
               v-else
               href="#"
               class="header__nav-link"
-              :class="{ 'header__nav-link--active': activeMenuKey === item.key }"
+              :class="[
+                { 'header__nav-link--active': activeMenuKey === item.key },
+                { 'header__nav-link--white': item.key === 'sns' }
+              ]"
               @click.prevent
             >
               {{ item.label }}
@@ -126,22 +143,34 @@ onUnmounted(() => {
           </div>
         </nav>
 
-        <!-- Actions -->
+        <!-- Actions (회원·관리자 + 버거) -->
         <div class="header__actions">
-          <template v-if="isLoggedIn">
-            <router-link to="/dashboard" class="header__member-link">{{ memberName }}님</router-link>
-            <button type="button" class="header__logout-btn" @click="clearSession">로그아웃</button>
-          </template>
-          <router-link v-else to="/login" class="header__login-link">로그인</router-link>
-          <router-link to="/reserve" class="header__cta">PT 예약</router-link>
-
-          <router-link to="/admin/login" class="header__admin-btn" aria-label="관리자">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </router-link>
-
+          <div
+            class="header__nav-item header__nav-item--mega"
+            @mouseenter="openMenu('member')"
+          >
+            <a
+              href="#"
+              class="header__nav-action-btn"
+              :class="{ 'header__nav-action-btn--active': activeMenuKey === 'member' }"
+              @click.prevent
+            >
+              회원
+            </a>
+          </div>
+          <div
+            class="header__nav-item header__nav-item--mega"
+            @mouseenter="openMenu('admin')"
+          >
+            <a
+              href="#"
+              class="header__nav-link header__nav-link--sub"
+              :class="{ 'header__nav-link--active': activeMenuKey === 'admin' }"
+              @click.prevent
+            >
+              관리자
+            </a>
+          </div>
           <button
             type="button"
             class="header__burger"
@@ -171,6 +200,7 @@ onUnmounted(() => {
               <div v-if="!memberLocked" class="header__mega-auth header__mega-auth--ok">
                 <span class="header__mega-auth-dot"></span>
                 {{ memberName }}님 로그인됨
+                <button type="button" class="header__mega-auth-logout" @click="memberLogout">로그아웃</button>
               </div>
               <div v-else class="header__mega-auth header__mega-auth--locked">
                 <span>🔒</span>
@@ -187,6 +217,7 @@ onUnmounted(() => {
               <div v-if="!adminLocked" class="header__mega-auth header__mega-auth--ok">
                 <span class="header__mega-auth-dot"></span>
                 관리자 로그인됨
+                <button type="button" class="header__mega-auth-logout" @click="adminLogout">로그아웃</button>
               </div>
               <div v-else class="header__mega-auth header__mega-auth--locked">
                 <span>🔒</span>
@@ -208,8 +239,25 @@ onUnmounted(() => {
             </router-link>
           </div>
           <div class="header__mega-grid">
+            <!-- 외부 링크 (SNS 등) -->
+            <a
+              v-for="cat in activeMenu.categories.filter(c => c.external)"
+              :key="cat.id"
+              :href="cat.readMore"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="header__mega-card"
+              @click="closeMenu"
+            >
+              <div class="header__mega-card-top">
+                <h4 class="header__mega-card-title">{{ cat.title }}</h4>
+                <span class="header__mega-card-arrow">↗</span>
+              </div>
+              <p class="header__mega-card-desc">{{ cat.description }}</p>
+            </a>
+            <!-- 내부 링크 -->
             <router-link
-              v-for="cat in activeMenu.categories"
+              v-for="cat in activeMenu.categories.filter(c => !c.external)"
               :key="cat.id"
               :to="(activeMenuKey === 'member' && memberLocked)
                 ? '/login'
@@ -292,14 +340,81 @@ onUnmounted(() => {
                 <Transition name="accordion">
                   <div v-if="mobileExpandedKey === item.key" class="header__mobile-drop">
                     <p class="header__mobile-desc">{{ menuData[item.key]?.description }}</p>
-                    <router-link
-                      v-for="cat in menuData[item.key]?.categories || []"
+
+                    <!-- 잠금 안내 (비로그인) -->
+                    <div
+                      v-if="(item.key === 'member' && memberLocked) || (item.key === 'admin' && adminLocked)"
+                      class="header__mobile-locked-box"
+                    >
+                      <span>🔒</span>
+                      <div>
+                        <p class="header__mobile-locked-msg">
+                          {{ item.key === 'admin' ? '관리자 로그인 후 이용 가능합니다' : '로그인 후 이용 가능합니다' }}
+                        </p>
+                        <p class="header__mobile-locked-hint">
+                          {{ item.key === 'admin' ? '비밀번호: admin1234' : '010-0000-0001 / demo1234' }}
+                        </p>
+                      </div>
+                      <router-link
+                        :to="item.key === 'admin' ? '/admin/login' : '/login'"
+                        class="header__mobile-locked-btn"
+                        @click="closeMobile"
+                      >
+                        로그인
+                      </router-link>
+                    </div>
+
+                    <!-- 로그인됨 안내 -->
+                    <div
+                      v-if="(item.key === 'member' && !memberLocked) || (item.key === 'admin' && !adminLocked)"
+                      class="header__mobile-auth-box"
+                    >
+                      <span class="header__mobile-auth-dot"></span>
+                      <span class="header__mobile-auth-text">
+                        {{ item.key === 'admin' ? '관리자 로그인됨' : memberName + '님 로그인됨' }}
+                      </span>
+                      <button
+                        type="button"
+                        class="header__mobile-auth-logout"
+                        @click="item.key === 'admin' ? adminLogout() : memberLogout()"
+                      >
+                        로그아웃
+                      </button>
+                    </div>
+
+                    <!-- 외부 링크 (SNS 등) -->
+                    <a
+                      v-for="cat in (menuData[item.key]?.categories || []).filter(c => c.external)"
                       :key="cat.id"
-                      :to="cat.readMore"
+                      :href="cat.readMore"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       class="header__mobile-link"
                       @click="closeMobile"
                     >
-                      <strong>{{ cat.title }}</strong>
+                      <strong>{{ cat.title }} ↗</strong>
+                      <span>{{ cat.description }}</span>
+                    </a>
+                    <!-- 내부 링크 -->
+                    <router-link
+                      v-for="cat in (menuData[item.key]?.categories || []).filter(c => !c.external)"
+                      :key="cat.id"
+                      :to="(item.key === 'member' && memberLocked)
+                        ? '/login'
+                        : (item.key === 'admin' && adminLocked)
+                          ? '/admin/login'
+                          : cat.readMore"
+                      class="header__mobile-link"
+                      :class="{
+                        'header__mobile-link--locked':
+                          (item.key === 'member' && memberLocked) ||
+                          (item.key === 'admin' && adminLocked)
+                      }"
+                      @click="closeMobile"
+                    >
+                      <strong>
+                        {{ ((item.key === 'member' && memberLocked) || (item.key === 'admin' && adminLocked)) ? '🔒 ' : '' }}{{ cat.title }}
+                      </strong>
                       <span>{{ cat.description }}</span>
                     </router-link>
                   </div>
@@ -460,8 +575,51 @@ onUnmounted(() => {
 }
 
 .header__nav-link:hover,
-.header__nav-link.router-link-active {
+.header__nav-link.router-link-active,
+.header__nav-link--active {
   color: var(--brand-primary);
+}
+
+.header__nav-link.header__nav-link--white {
+  color: #fff !important;
+}
+
+.header__nav-link--sub {
+  font-size: 13px;
+}
+
+.header__nav-item--mega {
+  display: none;
+  position: relative;
+}
+
+@media (min-width: 1025px) {
+  .header__nav-item--mega {
+    display: block;
+  }
+}
+
+.header__nav-action-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.header__nav-action-btn:hover,
+.header__nav-action-btn--active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .header__actions {
@@ -741,6 +899,30 @@ onUnmounted(() => {
 }
 .header__mega-auth-btn:hover { background: var(--brand-primary-hover); }
 
+.header__mega-auth-logout {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header__mega-auth-logout:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.header__mega-auth-logout--standalone {
+  display: inline-block;
+  margin-top: 10px;
+}
+
 /* 잠긴 카드 */
 .header__mega-card--locked {
   opacity: 0.45;
@@ -842,31 +1024,6 @@ onUnmounted(() => {
 .accordion-enter-from,
 .accordion-leave-to { opacity: 0; transform: translateY(-4px); }
 
-/* 관리자 아이콘 버튼 */
-.header__admin-btn {
-  display: none;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.35);
-  text-decoration: none;
-  transition: color 0.2s, background 0.2s;
-  flex-shrink: 0;
-}
-.header__admin-btn svg {
-  width: 16px;
-  height: 16px;
-}
-.header__admin-btn:hover {
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.08);
-}
-@media (min-width: 1025px) {
-  .header__admin-btn { display: inline-flex; }
-}
-
 /* 모바일 관리자 링크 */
 .header__mobile-admin {
   margin-top: 10px;
@@ -882,6 +1039,94 @@ onUnmounted(() => {
 }
 .header__mobile-admin:hover {
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* 모바일 잠금 안내 */
+.header__mobile-locked-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.header__mobile-locked-msg {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.header__mobile-locked-hint {
+  margin: 2px 0 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+}
+
+.header__mobile-locked-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--brand-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.header__mobile-link--locked {
+  opacity: 0.45;
+  pointer-events: auto;
+}
+
+/* 모바일 로그인됨 상태 */
+.header__mobile-auth-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(26, 188, 156, 0.1);
+  border: 1px solid rgba(26, 188, 156, 0.18);
+  margin-bottom: 8px;
+}
+
+.header__mobile-auth-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  flex-shrink: 0;
+}
+
+.header__mobile-auth-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.header__mobile-auth-logout {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header__mobile-auth-logout:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 /* transitions */

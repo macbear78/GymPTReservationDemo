@@ -1,4 +1,9 @@
 <template>
+  <div>
+    <div v-if="demoBannerVisible" class="demo-notice-banner">
+      <span>🎯 이 화면은 포트폴리오 데모입니다. 실제 데이터가 아닙니다.</span>
+      <button type="button" class="demo-notice-banner__close" aria-label="닫기" @click="demoBannerVisible = false">×</button>
+    </div>
   <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
     <header class="mb-6 sm:mb-8">
       <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">예약 관리</h1>
@@ -99,10 +104,12 @@
       <p class="mt-2 text-slate-400 text-sm">새 예약이 들어오면 여기에 표시됩니다.</p>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+const demoBannerVisible = ref(true);
 import AdminReservationsTable from '../components/AdminReservationsTable.vue';
 import {
   getReservations,
@@ -266,3 +273,42 @@ async function onCancel(id) {
 
 onMounted(load);
 </script>
+
+<style scoped>
+.demo-notice-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 40px 8px 8px;
+  background: rgba(15, 23, 42, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.demo-notice-banner__close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.demo-notice-banner__close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #475569;
+}
+</style>

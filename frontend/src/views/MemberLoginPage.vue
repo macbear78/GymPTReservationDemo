@@ -17,6 +17,26 @@
         </p>
       </div>
 
+      <!-- 데모 체험 -->
+      <button
+        type="button"
+        class="demo-btn w-full text-left"
+        :disabled="submitting"
+        @click="demoLogin"
+      >
+        <span class="demo-btn__icon">🎯</span>
+        <span class="demo-btn__body">
+          <strong class="demo-btn__title">데모 계정으로 체험하기</strong>
+          <span class="demo-btn__sub">전화: 010-0000-0001 / PW: demo1234</span>
+        </span>
+      </button>
+
+      <div class="demo-divider">
+        <span class="demo-divider__line"></span>
+        <span class="demo-divider__text">또는</span>
+        <span class="demo-divider__line"></span>
+      </div>
+
       <!-- 탭 -->
       <div class="flex rounded-xl border border-slate-200 bg-white p-1 mb-6 shadow-sm">
         <button
@@ -106,7 +126,11 @@
         </button>
       </div>
 
-      <p class="text-center text-xs text-slate-400 mt-6">
+      <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl text-blue-700 text-sm text-center">
+        💡 데모 계정: 010-0000-0001 / demo1234
+      </div>
+
+      <p class="text-center text-xs text-slate-400 mt-4">
         {{ tab === 'login' ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?' }}
         <button type="button" class="text-primary-600 font-medium hover:underline ml-1" @click="tab = tab === 'login' ? 'register' : 'login'">
           {{ tab === 'login' ? '회원가입' : '로그인' }}
@@ -134,6 +158,41 @@ const submitting = ref(false);
 const form = ref({ name: '', phone: '', password: '', confirm: '' });
 
 const STORE_ID = 'store_default';
+
+const DEMO_NAME = '데모 회원';
+const DEMO_PHONE = '01000000001';
+const DEMO_PASSWORD = 'demo1234';
+
+async function demoLogin() {
+  if (submitting.value) return;
+  errorMsg.value = '';
+  submitting.value = true;
+  try {
+    let result;
+    try {
+      result = await memberRegister(STORE_ID, {
+        name: DEMO_NAME,
+        phone: DEMO_PHONE,
+        password: DEMO_PASSWORD,
+      });
+    } catch (regErr) {
+      if (regErr.message?.includes('409') || regErr.status === 409 || regErr.message?.includes('이미')) {
+        result = await memberLogin(STORE_ID, {
+          phone: DEMO_PHONE,
+          password: DEMO_PASSWORD,
+        });
+      } else {
+        throw regErr;
+      }
+    }
+    setSession(result.token, result.userId, result.name, result.phone);
+    router.push('/dashboard');
+  } catch (e) {
+    errorMsg.value = e.message || '데모 로그인에 실패했습니다.';
+  } finally {
+    submitting.value = false;
+  }
+}
 
 function formatPhone(value) {
   const d = value.replace(/\D/g, '').slice(0, 11);
@@ -180,3 +239,70 @@ async function submit() {
   }
 }
 </script>
+
+<style scoped>
+.demo-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.demo-btn:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.demo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.demo-btn__icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.demo-btn__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.demo-btn__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.demo-btn__sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 400;
+}
+
+.demo-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.demo-divider__line {
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.demo-divider__text {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+</style>

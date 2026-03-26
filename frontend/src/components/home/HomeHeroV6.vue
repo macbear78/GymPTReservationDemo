@@ -42,7 +42,7 @@
       <div class="hero-v6__program-meta">
         <p class="hero-v6__program-name">{{ featuredProgram.title }}</p>
         <p class="hero-v6__program-desc">{{ featuredProgram.desc }}</p>
-        <router-link to="/passes" class="hero-v6__program-link">알아보기 →</router-link>
+        <router-link to="/passes" class="hero-v6__program-link">지금 예약하기 →</router-link>
       </div>
     </div>
 

@@ -55,14 +55,14 @@ function onInstagramPost(_post) {
 
 const STORE_ID = 'store_default';
 
-const storeName = ref('짐 PT');
-const storeAddress = ref('서울시 강남구 테헤란로 123');
-const storePhoneRaw = ref('02-0000-0000');
+const storeName = ref('GymPT 강남점');
+const storeAddress = ref('서울특별시 강남구 테헤란로 427');
+const storePhoneRaw = ref('02-1234-5678');
 
 const hero = ref({
   image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=85',
-  title: '지금 시작하세요\n오늘부터 달라질 겁니다.',
-  subtitle: '프리미엄 1:1 퍼스널 트레이닝 · 목표까지 함께합니다',
+  title: '한계를 넘어\n새로운 나를 만나다.',
+  subtitle: '프리미엄 1:1 퍼스널 트레이닝 · 강남 직영점',
 });
 
 const aboutSections = ref([
@@ -120,7 +120,9 @@ const storePhoneHref = computed(() => {
   const digits = String(storePhoneRaw.value || '').replace(/\D/g, '');
   return digits ? `tel:${digits}` : 'tel:';
 });
-const googleMapQuery = computed(() => encodeURIComponent(storeAddress.value || '서울시 강남구'));
+const googleMapQuery = computed(() =>
+  encodeURIComponent(storeAddress.value || '서울특별시 강남구 테헤란로 427')
+);
 const googleMapEmbedUrl = computed(() => `https://maps.google.com/maps?q=${googleMapQuery.value}&z=16&output=embed`);
 const googleMapLinkUrl = computed(
   () => `https://www.google.com/maps/search/?api=1&query=${googleMapQuery.value}`
