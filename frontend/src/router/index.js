@@ -3,6 +3,8 @@ import { useAuth } from '../composables/useAuth';
 
 const routes = [
   { path: '/', name: 'Home', component: () => import('../views/HomeSwitcher.vue'), meta: { title: 'Home' } },
+  { path: '/classes', name: 'Classes', component: () => import('../views/ClassesPage.vue'), meta: { title: '강좌 안내' } },
+  { path: '/story', name: 'Story', component: () => import('../views/StoryPage.vue'), meta: { title: '스토리' } },
   { path: '/trainers', name: 'Trainers', component: () => import('../views/TrainersPage.vue'), meta: { title: '트레이너 목록' } },
   { path: '/trainers/:id', name: 'TrainerDetail', component: () => import('../views/TrainerDetailPage.vue'), meta: { title: '트레이너 상세' } },
   { path: '/reserve', name: 'Reserve', component: () => import('../views/ReservationPage.vue'), meta: { title: 'PT 예약' } },
@@ -30,6 +32,11 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition;
+    if (to.hash) return { el: to.hash, behavior: 'smooth' };
+    return { top: 0 };
+  },
 });
 
 // 관리자 인증 가드

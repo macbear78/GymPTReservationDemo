@@ -2,10 +2,10 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
     <!-- Header -->
     <header class="mb-8">
-      <h1 class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">
+      <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight uppercase">
         {{ isSingleTrainer ? '트레이너 소개' : '트레이너 목록' }}
       </h1>
-      <p class="mt-2 text-slate-600">
+      <p class="mt-2 text-slate-400">
         {{ isSingleTrainer ? 'PT 트레이너를 소개합니다.' : '전문 PT 트레이너를 만나보세요. 원하시는 트레이너를 선택해 예약할 수 있습니다.' }}
       </p>
     </header>
@@ -14,7 +14,7 @@
     <div v-if="!isSingleTrainer" class="mb-8 space-y-4">
       <div class="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <div class="relative flex-1 max-w-md">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -23,12 +23,12 @@
             v-model="searchQuery"
             type="text"
             placeholder="트레이너 이름 검색"
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-[#1e1e1e] text-white placeholder-slate-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
           />
         </div>
       </div>
       <div class="flex flex-wrap gap-3">
-        <div class="flex items-center gap-2 text-sm text-slate-600 font-medium">전문분야</div>
+        <div class="flex items-center gap-2 text-sm text-slate-400 font-medium">전문분야</div>
         <div class="flex flex-wrap gap-2">
           <button
             v-for="opt in specialtyOptions"
@@ -38,14 +38,14 @@
               'px-4 py-2 rounded-xl text-sm font-medium transition',
               filters.specialty === opt.value
                 ? 'bg-primary-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                : 'bg-white/5 text-slate-300 hover:bg-white/10',
             ]"
             @click="filters.specialty = opt.value"
           >
             {{ opt.label }}
           </button>
         </div>
-        <div class="flex items-center gap-2 text-sm text-slate-600 font-medium ml-4 sm:ml-6">가격</div>
+        <div class="flex items-center gap-2 text-sm text-slate-400 font-medium ml-4 sm:ml-6">가격</div>
         <div class="flex flex-wrap gap-2">
           <button
             v-for="opt in priceOptions"
@@ -55,7 +55,7 @@
               'px-4 py-2 rounded-xl text-sm font-medium transition',
               filters.price === opt.value
                 ? 'bg-primary-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                : 'bg-white/5 text-slate-300 hover:bg-white/10',
             ]"
             @click="filters.price = opt.value"
           >
@@ -69,17 +69,17 @@
     <div v-if="loading" class="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
       <TrainerCardSkeleton v-for="i in 6" :key="i" />
     </div>
-    <div v-else-if="error" class="rounded-2xl bg-red-50 border border-red-200 px-6 py-4 text-red-700">
+    <div v-else-if="error" class="rounded-2xl bg-red-950/50 border border-red-800/50 px-6 py-4 text-red-400">
       {{ error }}
     </div>
-    <div v-else-if="filteredTrainers.length === 0" class="rounded-2xl bg-slate-50 border border-slate-200 px-6 py-12 text-center text-slate-600">
+    <div v-else-if="filteredTrainers.length === 0" class="rounded-2xl bg-white/5 border border-white/10 px-6 py-12 text-center text-slate-400">
       조건에 맞는 트레이너가 없습니다.
     </div>
     <div v-else class="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
       <article
         v-for="trainer in filteredTrainers"
         :key="trainer.id"
-        class="trainer-card group rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-slate-300 cursor-pointer"
+        class="trainer-card group rounded-2xl border border-white/10 bg-[#141414] p-6 sm:p-8 transition-all duration-300 hover:border-primary-500/50 hover:scale-[1.02] cursor-pointer"
         @click="goToDetail(trainer.id)"
       >
         <div class="flex flex-col h-full">
@@ -87,7 +87,7 @@
           <div class="flex justify-center mb-4">
             <div
               v-if="trainer.profileImage || trainer.image"
-              class="w-20 h-20 rounded-full bg-cover bg-center ring-4 ring-white shadow-lg"
+              class="w-20 h-20 rounded-full bg-cover bg-center ring-4 ring-white/10 shadow-lg"
               :style="{ backgroundImage: `url(${trainer.profileImage || trainer.image})` }"
             />
             <div
@@ -98,26 +98,17 @@
               {{ trainer.name.charAt(0) }}
             </div>
           </div>
-          <h2 class="text-xl font-bold text-slate-800 text-center">{{ trainer.name }}</h2>
-          <p class="text-sm text-primary-600 font-medium text-center mt-0.5">{{ trainer.specialty }}</p>
-          <p class="text-xs text-slate-500 text-center mt-1">{{ trainer.experience }}</p>
+          <h2 class="text-xl font-bold text-white text-center">{{ trainer.name }}</h2>
+          <p class="text-sm text-primary-400 font-medium text-center mt-0.5">{{ trainer.specialty }}</p>
+          <p class="text-xs text-slate-400 text-center mt-1">{{ trainer.experience }}</p>
           <div class="flex justify-center my-3">
             <StarRating :value="trainer.rating ?? 0" class="justify-center" />
           </div>
-          <p class="text-sm text-slate-600 line-clamp-2 flex-1 min-h-[2.5rem]">{{ trainer.intro || '—' }}</p>
-          <p class="text-lg font-bold text-slate-800 mt-3">
-            <span class="text-slate-500 text-sm font-normal">시간당 </span>{{ formatPrice(trainer.pricePerHour ?? 0) }}
-          </p>
-          <div class="flex gap-2 mt-4 pt-4 border-t border-slate-100" @click.stop>
-            <router-link
-              :to="{ path: '/reserve', query: { trainer: trainer.name } }"
-              class="flex-1 py-3 rounded-xl font-medium text-center bg-primary-500 text-white hover:bg-primary-600 transition shadow-sm group-hover:shadow-md group-hover:ring-2 group-hover:ring-primary-400"
-            >
-              예약하기
-            </router-link>
+          <p class="text-sm text-slate-400 line-clamp-2 flex-1 min-h-[2.5rem]">{{ trainer.intro || '—' }}</p>
+          <div class="mt-4 pt-4 border-t border-white/5" @click.stop>
             <router-link
               :to="{ name: 'TrainerDetail', params: { id: trainer.id } }"
-              class="flex-1 py-3 rounded-xl font-medium text-center bg-slate-100 text-slate-700 hover:bg-slate-200 transition border border-slate-200"
+              class="block w-full py-3 rounded-xl font-medium text-center bg-white/5 text-slate-300 hover:bg-primary-500 hover:text-white transition border border-white/10"
             >
               프로필 보기
             </router-link>
@@ -130,20 +121,21 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { getTrainers } from '../api';
 import StarRating from '../components/StarRating.vue';
 import TrainerCardSkeleton from '../components/TrainerCardSkeleton.vue';
 import { useSingleTrainerShop } from '../composables/useSingleTrainerShop';
 
 const router = useRouter();
+const route = useRoute();
 const trainers = ref([]);
 const { isSingleTrainer } = useSingleTrainerShop(trainers);
 const loading = ref(true);
 const error = ref('');
 const searchQuery = ref('');
 const filters = ref({
-  specialty: 'all',
+  specialty: route.query.specialty || 'all',
   price: 'all',
 });
 
@@ -192,10 +184,6 @@ const AVATAR_COLORS = {
 
 function avatarClass(trainer) {
   return AVATAR_COLORS[(trainer.id || '').toLowerCase()] || 'bg-slate-500';
-}
-
-function formatPrice(n) {
-  return new Intl.NumberFormat('ko-KR').format(n) + '원';
 }
 
 function goToDetail(id) {

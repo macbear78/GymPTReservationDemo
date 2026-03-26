@@ -2,8 +2,8 @@
   <div class="space-y-6">
 
     <!-- Step 1: 전화번호 입력 -->
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-      <label class="block text-sm font-medium text-slate-700 mb-3">
+    <section class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6">
+      <label class="block text-sm font-medium text-slate-300 mb-3">
         연락처
         <span class="text-slate-400 font-normal ml-1">예약 조회에 사용됩니다</span>
       </label>
@@ -15,7 +15,7 @@
           autocomplete="tel"
           placeholder="010-0000-0000"
           :disabled="!!user"
-          class="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition text-slate-800 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500"
+          class="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-[#1e1e1e] focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition text-white placeholder-slate-500 disabled:opacity-50"
           @input="onPhoneInput"
           @keyup.enter="lookupUser"
         />
@@ -31,7 +31,7 @@
         <button
           v-else
           type="button"
-          class="px-4 py-3 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-50 transition shrink-0 text-sm"
+          class="px-4 py-3 rounded-xl border border-white/10 text-slate-400 hover:bg-white/5 transition shrink-0 text-sm"
           @click="resetUser"
         >
           변경
@@ -43,15 +43,15 @@
     <!-- Step 1-b: 신규 사용자 이름 입력 -->
     <section
       v-if="needsName && !user"
-      class="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-6 shadow-sm"
+      class="rounded-2xl border border-amber-700/40 bg-amber-950/30 p-4 sm:p-6"
     >
-      <p class="text-sm text-amber-700 mb-3">처음 오셨군요! 이름을 입력해주세요.</p>
+      <p class="text-sm text-amber-400 mb-3">처음 오셨군요! 이름을 입력해주세요.</p>
       <div class="flex gap-2">
         <input
           v-model="newName"
           type="text"
           placeholder="이름"
-          class="flex-1 px-4 py-3 rounded-xl border border-amber-300 focus:ring-2 focus:ring-amber-400 outline-none transition text-slate-800 placeholder-slate-400"
+          class="flex-1 px-4 py-3 rounded-xl border border-amber-700/40 bg-[#1e1e1e] focus:ring-2 focus:ring-amber-400 outline-none transition text-white placeholder-slate-500"
           @keyup.enter="lookupUser"
         />
         <button
@@ -68,14 +68,14 @@
     <!-- 사용자 확인 배지 -->
     <div
       v-if="user"
-      class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200"
+      class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-950/40 border border-emerald-700/40"
     >
       <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
         {{ user.name.charAt(0) }}
       </div>
       <div class="min-w-0">
-        <p class="font-semibold text-emerald-800 text-sm">{{ user.name }}</p>
-        <p class="text-emerald-600 text-xs">{{ user.phone }}</p>
+        <p class="font-semibold text-emerald-400 text-sm">{{ user.name }}</p>
+        <p class="text-emerald-500 text-xs">{{ user.phone }}</p>
       </div>
       <span
         v-if="user.isNew"
@@ -86,11 +86,11 @@
     <!-- Step 1-c: 패스 선택 (활성 패스 있을 때만) -->
     <section
       v-if="user && activePasses.length > 0"
-      class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm"
+      class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6"
     >
       <div class="flex items-center justify-between mb-3">
-        <label class="text-sm font-medium text-slate-700">PT 패스 사용</label>
-        <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">선택사항</span>
+        <label class="text-sm font-medium text-slate-300">PT 패스 사용</label>
+        <span class="text-xs text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">선택사항</span>
       </div>
       <div class="space-y-2">
         <!-- 패스 미사용 옵션 -->
@@ -99,17 +99,17 @@
           :class="[
             'w-full flex items-center gap-3 p-3 rounded-xl border-2 transition text-left',
             !form.passId
-              ? 'border-primary-400 bg-primary-50'
-              : 'border-slate-200 hover:border-slate-300',
+              ? 'border-primary-500 bg-primary-950/30'
+              : 'border-white/10 hover:border-white/20',
           ]"
           @click="form.passId = null"
         >
-          <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-            <span class="text-slate-500 text-xs font-bold">-</span>
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+            <span class="text-slate-400 text-xs font-bold">-</span>
           </div>
           <div>
-            <p class="font-medium text-slate-700 text-sm">패스 미사용</p>
-            <p class="text-slate-400 text-xs">이번 예약에 패스를 사용하지 않습니다</p>
+            <p class="font-medium text-slate-300 text-sm">패스 미사용</p>
+            <p class="text-slate-500 text-xs">이번 예약에 패스를 사용하지 않습니다</p>
           </div>
         </button>
         <!-- 활성 패스 목록 -->
@@ -120,35 +120,35 @@
           :class="[
             'w-full flex items-center gap-3 p-3 rounded-xl border-2 transition text-left',
             form.passId === pass.passId
-              ? 'border-emerald-400 bg-emerald-50'
-              : 'border-slate-200 hover:border-slate-300',
+              ? 'border-emerald-500 bg-emerald-950/30'
+              : 'border-white/10 hover:border-white/20',
           ]"
           @click="form.passId = pass.passId"
         >
-          <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-            <span class="text-emerald-700 text-xs font-bold">{{ pass.remainingSessions }}</span>
+          <div class="w-8 h-8 rounded-full bg-emerald-900/50 flex items-center justify-center shrink-0">
+            <span class="text-emerald-400 text-xs font-bold">{{ pass.remainingSessions }}</span>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="font-medium text-slate-700 text-sm">잔여 {{ pass.remainingSessions }}회 / {{ pass.totalSessions }}회</p>
-            <p class="text-slate-400 text-xs">만료일 {{ pass.expiryDate }}{{ pass.memo ? ` · ${pass.memo}` : '' }}</p>
+            <p class="font-medium text-slate-300 text-sm">잔여 {{ pass.remainingSessions }}회 / {{ pass.totalSessions }}회</p>
+            <p class="text-slate-500 text-xs">만료일 {{ pass.expiryDate }}{{ pass.memo ? ` · ${pass.memo}` : '' }}</p>
           </div>
-          <span v-if="form.passId === pass.passId" class="text-emerald-600 text-xs font-semibold shrink-0">선택됨</span>
+          <span v-if="form.passId === pass.passId" class="text-emerald-400 text-xs font-semibold shrink-0">선택됨</span>
         </button>
       </div>
     </section>
 
     <template v-if="user">
       <!-- Step 2: 날짜 -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
+      <section class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6">
         <CalendarPicker v-model="form.date" />
       </section>
 
       <!-- Step 3: 시간 -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-        <label class="block text-sm font-medium text-slate-700 mb-3">시간 선택</label>
+      <section class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6">
+        <label class="block text-sm font-medium text-slate-300 mb-3">시간 선택</label>
         <p v-if="!form.date" class="text-slate-500 text-sm">먼저 날짜를 선택해 주세요.</p>
-        <p v-else-if="slotsLoading" class="text-slate-500 text-sm">시간 조회 중…</p>
-        <p v-else-if="availableSlots.length === 0" class="text-slate-500 text-sm">해당 날짜에 예약 가능한 시간이 없습니다.</p>
+        <p v-else-if="slotsLoading" class="text-slate-400 text-sm">시간 조회 중…</p>
+        <p v-else-if="availableSlots.length === 0" class="text-slate-400 text-sm">해당 날짜에 예약 가능한 시간이 없습니다.</p>
         <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           <button
             v-for="slot in availableSlots"
@@ -158,7 +158,7 @@
               'py-3 sm:py-3.5 rounded-xl font-medium transition text-sm sm:text-base',
               form.time === slot
                 ? 'bg-primary-500 text-white ring-2 ring-primary-500 ring-offset-2 shadow-md'
-                : 'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200',
+                : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10',
             ]"
             @click="form.time = slot"
           >
@@ -170,11 +170,11 @@
       <!-- Step 4: 트레이너 (2명 이상일 때만 표시, 1인 샵에서는 숨김) -->
       <section
         v-if="trainers.length > 1"
-        class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm"
+        class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <label class="text-sm font-medium text-slate-700">트레이너 선택</label>
-          <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">선택사항</span>
+          <label class="text-sm font-medium text-slate-300">트레이너 선택</label>
+          <span class="text-xs text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">선택사항</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <!-- 미선택 옵션 -->
@@ -183,17 +183,17 @@
             :class="[
               'flex items-center gap-3 p-3 rounded-xl border-2 transition text-left',
               !form.trainerId
-                ? 'border-primary-400 bg-primary-50'
-                : 'border-slate-200 hover:border-slate-300',
+                ? 'border-primary-500 bg-primary-950/30'
+                : 'border-white/10 hover:border-white/20',
             ]"
             @click="form.trainerId = null"
           >
-            <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold shrink-0">
+            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-slate-400 text-xs font-bold shrink-0">
               무관
             </div>
             <div>
-              <p class="font-medium text-slate-700 text-sm">트레이너 무관</p>
-              <p class="text-slate-400 text-xs">아무 트레이너나 배정</p>
+              <p class="font-medium text-slate-300 text-sm">트레이너 무관</p>
+              <p class="text-slate-500 text-xs">아무 트레이너나 배정</p>
             </div>
           </button>
           <button
@@ -203,8 +203,8 @@
             :class="[
               'flex items-center gap-3 p-3 rounded-xl border-2 transition text-left',
               form.trainerId === t.id
-                ? 'border-primary-400 bg-primary-50'
-                : 'border-slate-200 hover:border-slate-300',
+                ? 'border-primary-500 bg-primary-950/30'
+                : 'border-white/10 hover:border-white/20',
             ]"
             @click="selectTrainer(t)"
           >
@@ -216,19 +216,19 @@
               <span v-if="!t.profileImage">{{ t.name.charAt(0) }}</span>
             </div>
             <div class="min-w-0">
-              <p class="font-medium text-slate-700 text-sm truncate">{{ t.name }}</p>
-              <p class="text-slate-400 text-xs truncate">{{ t.specialty }}</p>
+              <p class="font-medium text-slate-300 text-sm truncate">{{ t.name }}</p>
+              <p class="text-slate-500 text-xs truncate">{{ t.specialty }}</p>
             </div>
           </button>
         </div>
       </section>
 
       <!-- Step 5: PT 유형 (1인일 때 Step 4) -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-        <label class="block text-sm font-medium text-slate-700 mb-2">PT 유형</label>
+      <section class="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6">
+        <label class="block text-sm font-medium text-slate-300 mb-2">PT 유형</label>
         <select
           v-model="form.ptType"
-          class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 outline-none transition text-slate-800"
+          class="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1e1e1e] focus:ring-2 focus:ring-primary-500 outline-none transition text-white"
         >
           <option value="60min">60분</option>
           <option value="30min">30분</option>
@@ -238,33 +238,33 @@
       <!-- 예약 요약 -->
       <section
         v-if="form.date && form.time"
-        class="rounded-2xl border border-primary-200 bg-primary-50/50 p-4 sm:p-6"
+        class="rounded-2xl border border-primary-700/40 bg-primary-950/20 p-4 sm:p-6"
       >
-        <h3 class="text-sm font-semibold text-slate-700 mb-3">예약 요약</h3>
+        <h3 class="text-sm font-semibold text-white mb-3">예약 요약</h3>
         <dl class="space-y-2 text-sm sm:text-base">
           <div class="flex justify-between gap-2">
-            <dt class="text-slate-600">예약자</dt>
-            <dd class="font-medium text-slate-800">{{ user.name }}</dd>
+            <dt class="text-slate-400">예약자</dt>
+            <dd class="font-medium text-white">{{ user.name }}</dd>
           </div>
           <div class="flex justify-between gap-2">
-            <dt class="text-slate-600">날짜</dt>
-            <dd class="font-medium text-slate-800">{{ formatDate(form.date) }}</dd>
+            <dt class="text-slate-400">날짜</dt>
+            <dd class="font-medium text-white">{{ formatDate(form.date) }}</dd>
           </div>
           <div class="flex justify-between gap-2">
-            <dt class="text-slate-600">시간</dt>
-            <dd class="font-medium text-slate-800">{{ form.time }}</dd>
+            <dt class="text-slate-400">시간</dt>
+            <dd class="font-medium text-white">{{ form.time }}</dd>
           </div>
           <div v-if="selectedTrainer && trainers.length > 1" class="flex justify-between gap-2">
-            <dt class="text-slate-600">트레이너</dt>
-            <dd class="font-medium text-slate-800">{{ selectedTrainer.name }}</dd>
+            <dt class="text-slate-400">트레이너</dt>
+            <dd class="font-medium text-white">{{ selectedTrainer.name }}</dd>
           </div>
           <div class="flex justify-between gap-2">
-            <dt class="text-slate-600">PT</dt>
-            <dd class="font-medium text-slate-800">{{ form.ptType }}</dd>
+            <dt class="text-slate-400">PT</dt>
+            <dd class="font-medium text-white">{{ form.ptType }}</dd>
           </div>
           <div v-if="form.passId" class="flex justify-between gap-2">
-            <dt class="text-slate-600">패스 차감</dt>
-            <dd class="font-medium text-emerald-700">
+            <dt class="text-slate-400">패스 차감</dt>
+            <dd class="font-medium text-emerald-400">
               {{ activePasses.find(p => p.passId === form.passId)?.remainingSessions }}회 →
               {{ (activePasses.find(p => p.passId === form.passId)?.remainingSessions || 1) - 1 }}회
             </dd>

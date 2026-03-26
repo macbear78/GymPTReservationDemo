@@ -1,9 +1,9 @@
 /** Gym PT — 헤더 메가메뉴 데이터 (1인 트레이너 PT샵 톤) */
 export const navItems = [
   { key: 'home',     label: 'Home',       href: '/',        hasMega: false },
-  { key: 'classes',   label: '강좌',       href: '/trainers', hasMega: false },
+  { key: 'classes',   label: '강좌',       href: '/classes',  hasMega: false },
   { key: 'trainers', label: '트레이너',   href: '/trainers', hasMega: false },
-  { key: 'story',    label: '스토리',     href: '/#story',     hasMega: false },
+  { key: 'story',    label: '스토리',     href: '/story',      hasMega: false },
   { key: 'sns',      label: 'SNS',                              hasMega: true  },
   { key: 'member',   label: '회원',                            hasMega: true  },
   { key: 'admin',    label: '관리자',                         hasMega: true  },
@@ -17,12 +17,6 @@ export const menuData = {
     overviewLink: '/reserve',
     categories: [
       {
-        id: 'm1',
-        title: '트레이너 소개',
-        description: 'PT 트레이너를 소개합니다.',
-        readMore: '/trainers',
-      },
-      {
         id: 'm0',
         title: '내 PT · 예약',
         description: 'PT 현황, 다가오는 예약, 출석 달력을 한 번에 확인합니다.',
@@ -33,12 +27,6 @@ export const menuData = {
         title: 'PT 패스 구매',
         description: '세션 패스를 결제하고 바로 사용하세요.',
         readMore: '/passes',
-      },
-      {
-        id: 'm4',
-        title: '로그인 · 회원가입',
-        description: '전화번호와 비밀번호로 로그인하세요.',
-        readMore: '/login',
       },
     ],
   },
@@ -83,12 +71,6 @@ export const menuData = {
         title: '통계',
         description: '월별 예약·완료율·신규 회원 통계를 확인합니다.',
         readMore: '/admin/stats',
-      },
-      {
-        id: 'a7',
-        title: '스토어 설정',
-        description: '스튜디오 이름·주소·예약 시간을 설정합니다.',
-        readMore: '/admin/store',
       },
       {
         id: 'a2',

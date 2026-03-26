@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-2">
-    <label class="block text-sm font-medium text-slate-700">Date</label>
+    <label class="block text-sm font-medium text-slate-300">날짜 선택</label>
     <input
       type="date"
       :value="modelValue"
       :min="minDate"
-      class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
+      class="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1e1e1e] text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
       @input="$emit('update:modelValue', ($event.target).value)"
     />
   </div>
